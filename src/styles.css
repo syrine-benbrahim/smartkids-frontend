@@ -1,1 +1,29 @@
-/* You can add global styles to this file, and also import other style files */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+	--sk-primary: #1fbad9;
+	--sk-secondary: #f97316;
+	--sk-accent: #22c55e;
+}
+
+body {
+	@apply bg-gradient-to-br from-primary-50 via-white to-primary-100 min-h-screen text-slate-800;
+}
+
+.container-slim {
+	@apply max-w-md mx-auto px-4;
+}
+
+.btn-primary {
+	@apply inline-flex items-center justify-center rounded-xl bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 font-semibold shadow-md shadow-primary-200 transition;
+}
+
+.input {
+	@apply w-full rounded-xl border border-slate-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-200 px-4 py-2 outline-none bg-white/80 backdrop-blur;
+}
+
+.card {
+	@apply rounded-2xl bg-white/80 backdrop-blur shadow-lg p-6 border border-white/40;
+}

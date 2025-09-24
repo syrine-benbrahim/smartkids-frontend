@@ -1,0 +1,32 @@
+<div class="min-h-[90vh] grid place-items-center px-4">
+	<div class="card container-slim">
+		<div class="flex items-center gap-3 mb-6">
+			<div class="size-10 rounded-xl bg-primary-500 grid place-items-center text-white font-bold">SK</div>
+			<h2 class="text-2xl font-bold">SmartKids · Connexion</h2>
+		</div>
+
+		<form (ngSubmit)="onSubmit()" class="space-y-4">
+			<div>
+				<label class="block text-sm mb-1">Email</label>
+				<input class="input" type="email" [(ngModel)]="email" name="email" required />
+			</div>
+			<div>
+				<label class="block text-sm mb-1">Mot de passe</label>
+				<input class="input" type="password" [(ngModel)]="password" name="password" required />
+			</div>
+
+			<div *ngIf="error()" class="text-red-600 text-sm">{{ error() }}</div>
+
+			<button class="btn-primary w-full" [disabled]="loading()">
+				{{ loading() ? 'Connexion...' : 'Se connecter' }}
+			</button>
+		</form>
+
+		<p class="text-sm mt-4 text-center">Pas de compte ?
+			<a routerLink="/register" class="text-primary-600 font-semibold">Créer un compte</a>
+		</p>
+	</div>
+</div>
+
+
+
