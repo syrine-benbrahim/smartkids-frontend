@@ -37,278 +37,130 @@ export interface ApiResponse<T> {
   success: boolean;
   message?: string;
   data?: T;
-  meta?: {
-    current_page: number;
-    last_page: number;
-    per_page: number;
-    total: number;
-  };
+  meta?: { current_page: number; last_page: number; per_page: number; total: number };
   error?: string;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class ActivitesApiService {
   private http = inject(HttpClient);
   private baseUrl = 'http://localhost:8000/api/admin/activites';
 
-  private getJsonHeaders(): HttpHeaders {
+  private getHeaders(): HttpHeaders {
     return new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
     });
   }
-
-  /**
-   * Récupère la liste des activités avec filtres et pagination
-   */
+  getTypes(): Observable<any> {
+      return this.http.get(`${this.baseUrl}/activites/types`);
+    }
+  // ─── Liste des activités avec filtres ───
   getAll(filters: ActiviteFilters = {}): Observable<ApiResponse<Activite[]>> {
     let params = new HttpParams();
-    
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== null && value !== undefined && value !== '') {
         params = params.set(key, value.toString());
       }
     });
-
-    return this.http.get<ApiResponse<Activite[]>>(this.baseUrl, { params });
+    return this.http.get<ApiResponse<Activite[]>>(this.baseUrl, { headers: this.getHeaders(), params });
   }
 
-  /**
-   * Récupère une activité spécifique
-   */
+  // ─── Récupère une activité par ID ───
   get(id: number): Observable<ApiResponse<Activite>> {
-    return this.http.get<ApiResponse<Activite>>(`${this.baseUrl}/${id}`);
+    return this.http.get<ApiResponse<Activite>>(`${this.baseUrl}/${id}`, { headers: this.getHeaders() });
   }
 
-  /**
-   * Crée une nouvelle activité avec upload d'image
-   */
+  // ─── Création d'activité ───
   create(data: any, imageFile?: File): Observable<ApiResponse<Activite>> {
-    if (imageFile) {
-      return this.createWithImage(data, imageFile);
-    } else {
-      return this.createWithoutImage(data);
-    }
+    if (imageFile) return this.createWithImage(data, imageFile);
+    return this.createWithoutImage(data);
   }
 
-  /**
-   * Met à jour une activité avec upload d'image optionnel
-   */
+  // ─── Mise à jour d'activité ───
   update(id: number, data: any, imageFile?: File): Observable<ApiResponse<Activite>> {
-    if (imageFile) {
-      return this.updateWithImage(id, data, imageFile);
-    } else {
-      return this.updateWithoutImage(id, data);
-    }
+    if (imageFile) return this.updateWithImage(id, data, imageFile);
+    return this.updateWithoutImage(id, data);
   }
 
-  /**
-   * Crée une activité sans image (JSON)
-   */
+  // ─── Suppression ───
+  delete(id: number): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.baseUrl}/${id}`, { headers: this.getHeaders() });
+  }
+
+  // ─── Changer statut ───
+  changeStatus(id: number, statut: string): Observable<ApiResponse<Activite>> {
+    return this.http.patch<ApiResponse<Activite>>(
+      `${this.baseUrl}/${id}/statut`,
+      { statut },
+      { headers: this.getHeaders() }
+    );
+  }
+
+  // ─── Dupliquer activité ───
+  duplicate(id: number, data: { date_activite: string; heure_debut?: string; heure_fin?: string }): Observable<ApiResponse<Activite>> {
+    return this.http.post<ApiResponse<Activite>>(
+      `${this.baseUrl}/${id}/duplicate`,
+      data,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  // ─── Inscrire enfant ───
+  inscrireEnfant(activiteId: number, enfantId: number, remarques?: string): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(
+      `${this.baseUrl}/${activiteId}/inscrire`,
+      { enfant_id: enfantId, remarques },
+      { headers: this.getHeaders() }
+    );
+  }
+
+  // ─── Désinscrire enfant ───
+  desinscrireEnfant(activiteId: number, enfantId: number): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(
+      `${this.baseUrl}/${activiteId}/enfants/${enfantId}`,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  // ─── JSON sans image ───
   private createWithoutImage(data: any): Observable<ApiResponse<Activite>> {
-    const cleanData = this.prepareJsonData(data);
-    return this.http.post<ApiResponse<Activite>>(this.baseUrl, cleanData, { 
-      headers: this.getJsonHeaders() 
-    });
+    return this.http.post<ApiResponse<Activite>>(this.baseUrl, data, { headers: this.getHeaders() });
   }
 
-  /**
-   * Met à jour une activité sans image (JSON)
-   */
   private updateWithoutImage(id: number, data: any): Observable<ApiResponse<Activite>> {
-    const cleanData = this.prepareJsonData(data);
-    return this.http.put<ApiResponse<Activite>>(`${this.baseUrl}/${id}`, cleanData, { 
-      headers: this.getJsonHeaders() 
-    });
+    return this.http.put<ApiResponse<Activite>>(`${this.baseUrl}/${id}`, data, { headers: this.getHeaders() });
   }
 
-  /**
-   * Crée une activité avec image (FormData)
-   */
+  // ─── FormData avec image ───
   private createWithImage(data: any, imageFile: File): Observable<ApiResponse<Activite>> {
     const formData = this.prepareFormData(data, imageFile);
-    const headers = new HttpHeaders({
-      'Accept': 'application/json'
-      // Ne pas définir Content-Type pour FormData
-    });
-    return this.http.post<ApiResponse<Activite>>(this.baseUrl, formData, { headers });
+    return this.http.post<ApiResponse<Activite>>(this.baseUrl, formData, { headers: this.getHeadersForFormData() });
   }
 
-  /**
-   * Met à jour une activité avec image (FormData)
-   */
   private updateWithImage(id: number, data: any, imageFile: File): Observable<ApiResponse<Activite>> {
     const formData = this.prepareFormData(data, imageFile);
-    formData.append('_method', 'PUT');
-    const headers = new HttpHeaders({
-      'Accept': 'application/json'
-      // Ne pas définir Content-Type pour FormData
-    });
-    return this.http.post<ApiResponse<Activite>>(`${this.baseUrl}/${id}`, formData, { headers });
+    formData.append('_method', 'PUT'); // Laravel PUT via POST
+    return this.http.post<ApiResponse<Activite>>(`${this.baseUrl}/${id}`, formData, { headers: this.getHeadersForFormData() });
   }
 
-  /**
-   * Supprime une activité
-   */
-  delete(id: number): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.baseUrl}/${id}`);
-  }
-
-  /**
-   * Récupère les types d'activités disponibles
-   */
-  getTypes(): Observable<ApiResponse<string[]>> {
-    return this.http.get<ApiResponse<string[]>>(`${this.baseUrl}/types`);
-  }
-
-  /**
-   * Récupère les statistiques des activités
-   */
-  getStats(): Observable<ApiResponse<any>> {
-    return this.http.get<ApiResponse<any>>(`${this.baseUrl}/stats`);
-  }
-
-  /**
-   * Change le statut d'une activité
-   */
-  changeStatus(id: number, statut: string): Observable<ApiResponse<Activite>> {
-    return this.http.patch<ApiResponse<Activite>>(`${this.baseUrl}/${id}/statut`, { statut });
-  }
-
-  /**
-   * Duplique une activité
-   */
-  duplicate(id: number, data: { date_activite: string; heure_debut?: string; heure_fin?: string }): Observable<ApiResponse<Activite>> {
-    return this.http.post<ApiResponse<Activite>>(`${this.baseUrl}/${id}/duplicate`, data);
-  }
-
-  /**
-   * Inscrit un enfant à une activité
-   */
-  inscrireEnfant(activiteId: number, enfantId: number, remarques?: string): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/${activiteId}/enfants/inscrire`, {
-      enfant_id: enfantId,
-      remarques
+  private getHeadersForFormData(): HttpHeaders {
+    return new HttpHeaders({
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
     });
   }
 
-  /**
-   * Désinscrit un enfant d'une activité
-   */
-  desinscrireEnfant(activiteId: number, enfantId: number): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.baseUrl}/${activiteId}/enfants/${enfantId}`);
-  }
-
-  /**
-   * Marque les présences pour une activité
-   */
-  marquerPresences(activiteId: number, presences: any[]): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.baseUrl}/${activiteId}/presences`, { presences });
-  }
-
-  /**
-   * Prépare les données JSON (sans image)
-   */
-  private prepareJsonData(formData: any): any {
-    console.log('Préparation des données JSON:', formData);
-    
-    const data: any = {
-      nom: formData.nom?.trim() || '',
-      date_activite: formData.date_activite || '',
-      heure_debut: formData.heure_debut || '',
-      heure_fin: formData.heure_fin || '',
-      statut: formData.statut || 'planifiee'
-    };
-
-    // Champs optionnels - ajouter seulement s'ils ont une valeur
-    if (formData.description?.trim()) {
-      data.description = formData.description.trim();
+  private prepareFormData(data: any, imageFile: File): FormData {
+    const formData = new FormData();
+    for (const key in data) {
+      if (Array.isArray(data[key])) {
+        data[key].forEach((val: any, index: number) => formData.append(`${key}[${index}]`, val));
+      } else {
+        formData.append(key, data[key]);
+      }
     }
-
-    if (formData.type?.trim()) {
-      data.type = formData.type.trim();
-    }
-
-    if (formData.prix !== null && formData.prix !== undefined && formData.prix !== '' && !isNaN(formData.prix)) {
-      data.prix = parseFloat(formData.prix);
-    }
-
-    if (formData.capacite_max !== null && formData.capacite_max !== undefined && formData.capacite_max !== '' && !isNaN(formData.capacite_max)) {
-      data.capacite_max = parseInt(formData.capacite_max);
-    }
-
-    if (formData.materiel_requis?.trim()) {
-      data.materiel_requis = formData.materiel_requis.trim();
-    }
-
-    if (formData.consignes?.trim()) {
-      data.consignes = formData.consignes.trim();
-    }
-
-    // Éducateurs
-    if (formData.educateur_ids && Array.isArray(formData.educateur_ids) && formData.educateur_ids.length > 0) {
-      data.educateur_ids = formData.educateur_ids;
-    }
-
-    console.log('Données JSON préparées:', data);
-    return data;
-  }
-
-  /**
-   * Prépare les données FormData (avec image)
-   */
-  private prepareFormData(formData: any, imageFile: File): FormData {
-    const data = new FormData();
-    
-    console.log('Préparation FormData avec image:', formData);
-    
-    // Champs obligatoires
-    data.append('nom', formData.nom?.trim() || '');
-    data.append('date_activite', formData.date_activite || '');
-    data.append('heure_debut', formData.heure_debut || '');
-    data.append('heure_fin', formData.heure_fin || '');
-    data.append('statut', formData.statut || 'planifiee');
-    
-    // Champs optionnels
-    if (formData.description?.trim()) {
-      data.append('description', formData.description.trim());
-    }
-    
-    if (formData.type?.trim()) {
-      data.append('type', formData.type.trim());
-    }
-    
-    if (formData.prix !== null && formData.prix !== undefined && formData.prix !== '' && !isNaN(formData.prix)) {
-      data.append('prix', parseFloat(formData.prix).toString());
-    }
-    
-    if (formData.capacite_max !== null && formData.capacite_max !== undefined && formData.capacite_max !== '' && !isNaN(formData.capacite_max)) {
-      data.append('capacite_max', parseInt(formData.capacite_max).toString());
-    }
-    
-    if (formData.materiel_requis?.trim()) {
-      data.append('materiel_requis', formData.materiel_requis.trim());
-    }
-    
-    if (formData.consignes?.trim()) {
-      data.append('consignes', formData.consignes.trim());
-    }
-    
-    // Image
-    if (imageFile instanceof File) {
-      data.append('image', imageFile);
-    }
-    
-    // Éducateurs
-    if (formData.educateur_ids && Array.isArray(formData.educateur_ids)) {
-      formData.educateur_ids.forEach((id: number, index: number) => {
-        data.append(`educateur_ids[${index}]`, id.toString());
-      });
-    }
-    
-    console.log('FormData préparé');
-    return data;
+    if (imageFile) formData.append('image', imageFile);
+    return formData;
   }
 }

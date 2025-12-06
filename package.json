@@ -28,6 +28,8 @@
     "@angular/forms": "^20.3.0",
     "@angular/platform-browser": "^20.3.0",
     "@angular/router": "^20.3.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
@@ -38,6 +40,7 @@
     "@angular/compiler-cli": "^20.3.0",
     "@tailwindcss/forms": "^0.5.7",
     "@types/jasmine": "~5.1.0",
+    "@types/jspdf": "^2.0.0",
     "autoprefixer": "^10.4.21",
     "jasmine-core": "~5.9.0",
     "karma": "~6.4.0",

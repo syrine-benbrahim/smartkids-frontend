@@ -26,14 +26,16 @@ import { ClassesApiService, ClasseListItem } from '../../../services/classes-api
 
 		<div class="flex items-center gap-2 flex-wrap">
 			<input class="input max-w-sm" placeholder="Rechercher (nom/niveau)" [(ngModel)]="search" (ngModelChange)="reload()" />
-			<select class="input w-32" [(ngModel)]="niveauFilter" (change)="reload()">
+			<select class="input w-40" [(ngModel)]="niveauFilter" (change)="reload()">
 				<option value="">Tous niveaux</option>
-				<option value="Maternelle">Maternelle</option>
-				<option value="CP">CP</option>
-				<option value="CE1">CE1</option>
-				<option value="CE2">CE2</option>
-				<option value="CM1">CM1</option>
-				<option value="CM2">CM2</option>
+				<option value="1">Petite Section</option>
+				<option value="2">Moyenne Section</option>
+				<option value="3">Grande Section</option>
+				<option value="4">CP</option>
+				<option value="5">CE1</option>
+				<option value="6">CE2</option>
+				<option value="7">CM1</option>
+				<option value="8">CM2</option>
 			</select>
 			<select class="input w-28" [(ngModel)]="perPage" (change)="reload()">
 				<option [ngValue]="10">10</option>
@@ -59,7 +61,7 @@ import { ClassesApiService, ClasseListItem } from '../../../services/classes-api
 				<tbody>
 					<tr *ngFor="let c of items()" class="border-t hover:bg-gray-50">
 						<td class="px-3 py-2 font-medium">{{ c.nom }}</td>
-						<td class="px-3 py-2">{{ c.niveau }}</td>
+						<td class="px-3 py-2">{{ getNiveauLabel(c.niveau) }}</td>
 						<td class="px-3 py-2">{{ c.capacite_max }}</td>
 						<td class="px-3 py-2">
 							<span class="font-medium">{{ c.nombre_enfants }}</span>
@@ -190,6 +192,11 @@ export class ClassesListComponent {
 		this.router.navigate(['/admin']);
 	}
 
+	// CORRECTION: Ajouter la méthode pour obtenir le label du niveau
+	getNiveauLabel(niveau: number): string {
+		return ClassesApiService.getNiveauLabel(niveau);
+	}
+
 	getTauxOccupationClass(taux: number): string {
 		if (taux >= 100) return 'bg-red-500';
 		if (taux >= 90) return 'bg-orange-500';
@@ -211,5 +218,4 @@ export class ClassesListComponent {
 		if (classe.taux_occupation >= 70) return 'Bien remplie';
 		if (classe.nombre_enfants === 0) return 'Vide';
 		return 'Disponible';
-	}
-}
+	}}

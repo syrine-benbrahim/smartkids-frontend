@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 export interface ClasseListItem {
   id: number;
   nom: string;
-  niveau: number; // Changed to number to match backend
+  niveau: number; // CORRECTION: number pour correspondre au backend
   capacite_max: number;
   description?: string;
   nombre_enfants: number;
@@ -44,7 +44,7 @@ export interface ClasseDetail extends ClasseListItem {
 
 export interface ClasseFormData {
   nom: string;
-  niveau: string | number; // Flexible type - string for form, number for API
+  niveau: number; // CORRECTION: doit être number pour l'API
   capacite_max: number;
   description?: string;
 }
@@ -79,11 +79,11 @@ export class ClassesApiService {
   private http = inject(HttpClient);
   private baseUrl = 'http://127.0.0.1:8000/api/admin/classes';
 
-  list(params?: { 
-    page?: number; 
-    per_page?: number; 
-    search?: string; 
-    niveau?: number;
+  list(params?: {
+    page?: number;
+    per_page?: number;
+    search?: string;
+    niveau?: string; // CORRECTION: peut rester string pour le filtrage
     capacite_min?: number;
     capacite_max?: number;
     sort_by?: string;
