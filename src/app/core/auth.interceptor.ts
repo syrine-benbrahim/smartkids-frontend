@@ -1,8 +1,10 @@
-import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
+import { HttpInterceptorFn, HttpErrorResponse, HttpContextToken } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { AuthService } from './auth.service';
+
+export const BYPASS_AUTH_REDIRECT = new HttpContextToken<boolean>(() => false);
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
@@ -10,9 +12,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   // Debug: vérifier si le token existe
   console.log('🔑 Token dans interceptor:', auth.token ? 'Présent' : 'Absent');
-  
+
   const token = auth.token;
-  
+
   // Cloner la requête avec les headers nécessaires
   const cloned = token ? req.clone({
     setHeaders: {
@@ -34,8 +36,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(cloned).pipe(
     catchError((error: HttpErrorResponse) => {
       console.error('❌ Erreur interceptor:', error);
-      
-      if (error.status === 401) {
+
+      if (error.status === 401 && !req.context.get(BYPASS_AUTH_REDIRECT)) {
         console.log('🚪 Redirection vers login - Token invalide');
         auth.logout().subscribe({
           complete: () => {
@@ -47,7 +49,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           }
         });
       }
-      
+
       return throwError(() => error);
     })
   );

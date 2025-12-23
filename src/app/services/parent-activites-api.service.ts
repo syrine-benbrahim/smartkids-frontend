@@ -2,6 +2,18 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+export interface PaymentQuote {
+  success: true;
+  amount_due: number;
+  currency: string;
+  plan_type: string;
+  details: {
+    activite_nom: string;
+    date: string;
+    prix: number;
+  };
+}
+
 export interface ActiviteDisponible {
   id: number;
   nom: string;
@@ -12,10 +24,15 @@ export interface ActiviteDisponible {
   heure_fin: string;
   prix?: number;
   image?: string;
+  image_url?: string;
   capacite_max?: number | null;
   materiel_requis?: string;
   consignes?: string;
-  educateurs?: any[];
+  statut?: string;
+  educateurs?: Array<{
+    id: number;
+    user: { name: string };
+  }>;
   participants_count?: number;
   places_restantes?: number | null;
   est_complet?: boolean;
@@ -25,54 +42,64 @@ export interface ApiResponse<T> {
   success: boolean;
   message?: string;
   data?: T;
-  meta?: { current_page: number; last_page: number; per_page: number; total: number };
-  exception?: any;
+  meta?: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number
+  };
 }
 
-export interface ParticipationActivite {
-  id: number;
-  nom: string;
-  type?: string;
-  date_activite: string;
-  heure_debut: string;
-  heure_fin: string;
-  pivot: {
-    statut_participation: 'present' | 'absent' | 'excuse' | 'en_attente' | 'inscrit';
-    remarques?: string;
-    note_evaluation?: number;
+export interface ParticipationResponse {
+  participation: {
+    id: number;
+    enfant_id: number;
+    activite_id: number;
+    statut: string;
     date_inscription: string;
-    date_presence?: string;
   };
-}
-
-export interface PaiementActivite {
-  id: number;
-  montant_total: number;
-  statut: 'en_attente' | 'paye' | 'annule' | 'expire';
-  methode_paiement?: string;
-  date_echeance?: string;
-  reference_transaction?: string;
-  activite?: {
+  activite: {
     id: number;
     nom: string;
+    date: string;
+    prix: number;
   };
-  enfant?: {
+  paiement?: {
     id: number;
-    prenom: string;
-    nom: string;
+    montant: number;
+    statut: string;
+    methode: string;
+    date_echeance: string;
+    reference?: string;
   };
 }
 
 export interface StatistiquesEnfant {
   total_activites: number;
-  activites_terminees: number;
-  activites_a_venir: number;
   presences: number;
   absences: number;
-  note_moyenne?: number;
-  taux_presence: number;
-  par_type: Array<{ type: string; count: number }>;
-  dernieres_activites: ParticipationActivite[];
+  en_attente: number;
+  taux_participation: number;
+}
+
+export interface HistoriqueActivite {
+  activite: {
+    id: number;
+    nom: string;
+    type?: string;
+    date: string;
+    heure_debut: string;
+    heure_fin: string;
+    prix?: number;
+    statut?: string;
+  };
+  participation: {
+    statut: string;
+    remarques?: string;
+    date_inscription: string;
+    date_presence?: string;
+  };
+  educateurs?: Array<{ id: number; nom: string }>;
 }
 
 export interface CalendrierActivite {
@@ -83,10 +110,26 @@ export interface CalendrierActivite {
   heure_fin: string;
   type?: string;
   statut_participation: string;
-  note_evaluation?: number;
 }
 
-
+export interface PaiementActivite {
+  id: number;
+  montant: number;
+  date_echeance: string;
+  jours_restants: number;
+  statut: string;
+  methode: string;
+  activite: {
+    id: number;
+    nom: string;
+    date: string;
+  };
+  enfant: {
+    id: number;
+    nom: string;
+    prenom: string;
+  };
+}
 
 @Injectable({ providedIn: 'root' })
 export class ParentActivitesApiService {
@@ -117,13 +160,10 @@ export class ParentActivitesApiService {
     if (filters.date_fin) params = params.set('date_fin', filters.date_fin);
     if (filters.search) params = params.set('search', filters.search);
     if (filters.per_page) params = params.set('per_page', String(filters.per_page));
-
-    // Booleans must be sent as '1'/'0' or 'true'/'false' - controller uses $request->boolean()
-    if (typeof filters.places_disponibles !== 'undefined') {
+    if (filters.places_disponibles !== undefined) {
       params = params.set('places_disponibles', filters.places_disponibles ? '1' : '0');
     }
-
-    if (typeof filters.include_past !== 'undefined') {
+    if (filters.include_past !== undefined) {
       params = params.set('include_past', filters.include_past ? '1' : '0');
     }
 
@@ -133,70 +173,13 @@ export class ParentActivitesApiService {
     );
   }
 
-  // ─── Historique des activités d'un enfant ───
-  getHistoriqueEnfant(enfantId: number, page: number = 1): Observable<ApiResponse<any>> {
-    const params = new HttpParams().set('page', page.toString());
-    return this.http.get<ApiResponse<any>>(
-      `${this.baseUrl}/parent/activites/enfant/${enfantId}/historique`,
-      { headers: this.getHeaders(), params }
-    );
-  }
-
-  // ─── Statistiques d'un enfant ───
-  getStatistiquesEnfant(enfantId: number): Observable<ApiResponse<StatistiquesEnfant>> {
-    return this.http.get<ApiResponse<StatistiquesEnfant>>(
-      `${this.baseUrl}/parent/activites/enfant/${enfantId}/statistiques`,
-      { headers: this.getHeaders() }
-    );
-  }
-
-  // ─── Calendrier mensuel d'un enfant ───
-  getCalendrierEnfant(enfantId: number, mois: number, annee: number): Observable<ApiResponse<{
-    mois: number;
-    annee: number;
-    activites: CalendrierActivite[];
-  }>> {
-    const params = new HttpParams()
-      .set('mois', mois.toString())
-      .set('annee', annee.toString());
-
-    return this.http.get<ApiResponse<{
-      mois: number;
-      annee: number;
-      activites: CalendrierActivite[];
-    }>>(
-      `${this.baseUrl}/parent/activites/enfant/${enfantId}/calendrier`,
-      { headers: this.getHeaders(), params }
-    );
-  }
-
-  // ─── Détails d'une activité avec participation ───
-  getDetailsActiviteEnfant(activiteId: number, enfantId: number): Observable<ApiResponse<{
-    activite: any;
-    participation: {
-      statut_participation: string;
-      remarques?: string;
-      note_evaluation?: number;
-      date_inscription: string;
-      date_presence?: string;
-    };
-  }>> {
-    return this.http.get<ApiResponse<any>>(
-      `${this.baseUrl}/parent/activites/activite/${activiteId}/enfant/${enfantId}`,
-      { headers: this.getHeaders() }
-    );
-  }
-
   // ─── Participer à une activité ───
   participerActivite(activiteId: number, data: {
     enfant_id: number;
     remarques?: string;
     methode_paiement?: 'cash' | 'carte' | 'en_ligne';
-  }): Observable<ApiResponse<{
-    participation: any;
-    paiement?: PaiementActivite;
-  }>> {
-    return this.http.post<ApiResponse<any>>(
+  }): Observable<ApiResponse<ParticipationResponse>> {
+    return this.http.post<ApiResponse<ParticipationResponse>>(
       `${this.baseUrl}/parent/activites/${activiteId}/participer`,
       data,
       { headers: this.getHeaders() }
@@ -211,7 +194,31 @@ export class ParentActivitesApiService {
     );
   }
 
-  // ─── Liste des enfants (pour l'espace parent) ───
+  // ─── Historique des participations d'un enfant ───
+  getParticipationsEnfant(enfantId: number): Observable<ApiResponse<HistoriqueActivite[]>> {
+    return this.http.get<ApiResponse<HistoriqueActivite[]>>(
+      `${this.baseUrl}/parent/enfants/${enfantId}/participations`,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  // ─── Statistiques d'un enfant ───
+  getStatistiquesEnfant(enfantId: number): Observable<ApiResponse<StatistiquesEnfant>> {
+    return this.http.get<ApiResponse<StatistiquesEnfant>>(
+      `${this.baseUrl}/parent/activites/enfant/${enfantId}/statistiques`,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  // ─── Paiements en attente ───
+  getPaiementsEnAttente(): Observable<ApiResponse<PaiementActivite[]>> {
+    return this.http.get<ApiResponse<PaiementActivite[]>>(
+      `${this.baseUrl}/parent/activites/paiements-en-attente`,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  // ─── Liste des enfants ───
   getEnfants(): Observable<ApiResponse<any[]>> {
     return this.http.get<ApiResponse<any[]>>(
       `${this.baseUrl}/parent/enfants`,
@@ -219,33 +226,37 @@ export class ParentActivitesApiService {
     );
   }
 
-  // ─── Simuler un paiement ───
+  // ─── Paiement & Devis pour activité ───
+  getQuote(activiteId: number, enfantId: number): Observable<PaymentQuote> {
+    const params = new HttpParams().set('enfant_id', enfantId.toString());
+    return this.http.get<PaymentQuote>(
+      `${this.baseUrl}/parent/activites/${activiteId}/payment/quote`,
+      { headers: this.getHeaders(), params }
+    );
+  }
+
+  confirmPayment(activiteId: number, data: {
+    enfant_id: number;
+    methode: 'en_ligne' | 'carte' | 'cash';
+    reference?: string;
+    remarques?: string;
+  }): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(
+      `${this.baseUrl}/parent/activites/${activiteId}/payment/confirm`,
+      data,
+      { headers: this.getHeaders() }
+    );
+  }
+
+  // ─── Simuler un paiement (pour tests) ───
   simulatePayment(paiementId: number, data: {
     action: 'paye' | 'annule';
     methode_paiement?: string;
-    montant?: number;
     reference_transaction?: string;
-    remarques?: string;
   }): Observable<ApiResponse<any>> {
     return this.http.post<ApiResponse<any>>(
       `${this.baseUrl}/paiements/${paiementId}/simulate`,
       data
-    );
-  }
-
-  // ─── Récupérer les paiements en attente d'un parent ───
-  getPaiementsEnAttente(): Observable<ApiResponse<PaiementActivite[]>> {
-    return this.http.get<ApiResponse<PaiementActivite[]>>(
-      `${this.baseUrl}/parent/paiements/en-attente`,
-      { headers: this.getHeaders() }
-    );
-  }
-
-  // ─── Récupérer les inscriptions scolaires du parent ───
-  getInscriptions(): Observable<ApiResponse<any[]>> {
-    return this.http.get<ApiResponse<any[]>>(
-      `${this.baseUrl}/parent/inscriptions`,
-      { headers: this.getHeaders() }
     );
   }
 }

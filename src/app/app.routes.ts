@@ -6,6 +6,7 @@ import { HomepageComponent } from './pages/home/homepage.component';
 import { AuthGuard } from './core/auth.guard';
 import { RoleGuard } from './core/role.guard';
 import { AppLayoutComponent } from './shared/layout/app-layout.component';
+import { PaymentComponent } from './payment/payment.component';
 
 export const routes: Routes = [
   // ==================== ROUTES PUBLIQUES ====================
@@ -13,6 +14,8 @@ export const routes: Routes = [
   { path: 'home', component: HomepageComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
+  { path: 'pay/:token', component: PaymentComponent },
+  { path: 'pay/:token/quote', component: PaymentComponent },
 
   // ==================== CHAT (Accessible à tous les utilisateurs authentifiés) ====================
   {
@@ -158,6 +161,48 @@ export const routes: Routes = [
           }
         ]
       },
+      // ─────── SALLES ───────
+      {
+        path: 'salles',
+        children: [
+          {
+            path: '',
+            loadComponent: () => import('./pages/admin/salles/salles-list.component')
+              .then(m => m.SallesListComponent)
+          },
+          {
+            path: 'create',
+            loadComponent: () => import('./pages/admin/salles/salles-modal.component')
+              .then(m => m.SallesModalComponent)
+          },
+          {
+            path: ':id/edit',
+            loadComponent: () => import('./pages/admin/salles/salles-modal.component')
+              .then(m => m.SallesModalComponent)
+          }
+        ]
+      },
+      // ─────── MATIÈRES ───────
+      {
+        path: 'matieres',
+        children: [
+          {
+            path: '',
+            loadComponent: () => import('./pages/admin/matieres/matieres-list.component')
+              .then(m => m.MatieresListComponent)
+          },
+          {
+            path: 'create',
+            loadComponent: () => import('./pages/admin/matieres/matieres-modal.component')
+              .then(m => m.MatieresModalComponent)
+          },
+          {
+            path: ':id/edit',
+            loadComponent: () => import('./pages/admin/matieres/matieres-modal.component')
+              .then(m => m.MatieresModalComponent)
+          }
+        ]
+      },
 
       // ─────── AFFECTATIONS ───────
       {
@@ -262,99 +307,104 @@ export const routes: Routes = [
   },
 
   // ==================== ROUTES PARENT ====================
-{
-  path: 'parent',
-  component: AppLayoutComponent,
-  canActivate: [AuthGuard, RoleGuard],
-  data: { roles: ['parent'] },
-  children: [
-    // Dashboard Parent - Default route
-    {
-      path: '',
-      loadComponent: () => import('./pages/parent/parent-dashboard.component')
-        .then(m => m.ParentDashboardComponent)
-    },
-
-    {
-  path: 'enfants',
-  loadComponent: () => import('./pages/parent/parent-enfants-list.component')
-    .then(m => m.ParentEnfantsListComponent)
-  },
   {
-      path: 'enfants/:id',
-      loadComponent: () => import('./pages/parent/enfants/parent-enfant-fiche.component')
-        .then(m => m.ParentEnfantFicheComponent)
-    },
+    path: 'parent',
+    component: AppLayoutComponent,
+    canActivate: [AuthGuard, RoleGuard],
+    data: { roles: ['parent'] },
+    children: [
+      // Dashboard Parent - Default route
+      {
+        path: '',
+        loadComponent: () => import('./pages/parent/parent-dashboard.component')
+          .then(m => m.ParentDashboardComponent)
+      },
+      {
+        path: 'notifications',
+        loadComponent: () => import('./pages/parent/notifications/notifications-list.component')
+          .then(m => m.NotificationsListComponent)
+      },
 
-    // ─────── ENFANTS & PRÉSENCES ───────
-    {
-      path: 'enfants/:enfantId/presences',
-      loadComponent: () => import('./pages/parent/presences/parent-presences-enfant.component')
-        .then(m => m.ParentPresencesEnfantComponent)
-    },
-    {
-      path: 'enfants/:enfantId/presences/calendrier',
-      loadComponent: () => import('./pages/parent/presences/parent-presences-calendrier.component')
-        .then(m => m.ParentPresencesCalendrierComponent)
-    },
-    /*{
-      path: 'enfants/:enfantId/bulletin',
-      loadComponent: () => import('./pages/parent/bulletin/parent-bulletin.component')
-        .then(m => m.ParentBulletinComponent)
-    },*/
-    {
-      path: 'emploi',
-      loadComponent: () => import('./pages/parent/emploi/parent-emploi.component')
-        .then(m => m.ParentEmploiComponent)
-    },
+      {
+        path: 'enfants',
+        loadComponent: () => import('./pages/parent/parent-enfants-list.component')
+          .then(m => m.ParentEnfantsListComponent)
+      },
+      {
+        path: 'enfants/:id',
+        loadComponent: () => import('./pages/parent/enfants/parent-enfant-fiche.component')
+          .then(m => m.ParentEnfantFicheComponent)
+      },
 
-    // ─────── ACTIVITÉS PARENT ───────
-    {
-      path: 'activites',
-      children: [
-        // Vue principale : Activités disponibles pour inscription
-        {
-          path: '',
-          loadComponent: () => import('./pages/parent/activites/parent-activites-disponibles.component')
-            .then(m => m.ParentActivitesDisponiblesComponent)
-        },
-        
-        // Liste des enfants avec leurs statistiques d'activités
-        {
-          path: 'enfants',
-          loadComponent: () => import('./pages/parent/activites/parent-enfants-activites.component')
-            .then(m => m.ParentEnfantsActivitesComponent)
-        },
-        
-        // Historique des activités d'un enfant spécifique
-        {
-          path: 'enfant/:id/historique',
-          loadComponent: () => import('./pages/parent/activites/parent-enfant-historique.component')
-            .then(m => m.ParentEnfantHistoriqueComponent)
-        },
-        
-        // Calendrier des activités d'un enfant spécifique
-        {
-          path: 'enfant/:id/calendrier',
-          loadComponent: () => import('./pages/parent/activites/parent-enfant-calendrier.component')
-            .then(m => m.ParentEnfantCalendrierComponent)
-        }
-      ]
-    },
-    {
-    path: 'menus',
-    loadComponent: () => import('./pages/parent/menus/parent-menus.component')
-      .then(m => m.ParentMenusComponent)
-    },
+      // ─────── ENFANTS & PRÉSENCES ───────
+      {
+        path: 'enfants/:enfantId/presences',
+        loadComponent: () => import('./pages/parent/presences/parent-presences-enfant.component')
+          .then(m => m.ParentPresencesEnfantComponent)
+      },
+      {
+        path: 'enfants/:enfantId/presences/calendrier',
+        loadComponent: () => import('./pages/parent/presences/parent-presences-calendrier.component')
+          .then(m => m.ParentPresencesCalendrierComponent)
+      },
+      /*{
+        path: 'enfants/:enfantId/bulletin',
+        loadComponent: () => import('./pages/parent/bulletin/parent-bulletin.component')
+          .then(m => m.ParentBulletinComponent)
+      },*/
+      {
+        path: 'emploi',
+        loadComponent: () => import('./pages/parent/emploi/parent-emploi.component')
+          .then(m => m.ParentEmploiComponent)
+      },
 
-    // ─────── PAIEMENTS ───────
-    /*{
-      path: 'paiements',
-      loadComponent: () => import('./pages/parent/paiements/parent-paiements.component')
-        .then(m => m.ParentPaiementsComponent)
-    }*/
-  ]
-},
+      // ─────── ACTIVITÉS PARENT ───────
+      {
+        path: 'activites',
+        children: [
+          // Vue principale : Activités disponibles pour inscription
+          {
+            path: '',
+            loadComponent: () => import('./pages/parent/activites/parent-activites-disponibles.component')
+              .then(m => m.ParentActivitesDisponiblesComponent)
+          },
+
+          // Liste des enfants avec leurs statistiques d'activités
+          {
+            path: 'enfants',
+            loadComponent: () => import('./pages/parent/activites/parent-enfants-activites.component')
+              .then(m => m.ParentEnfantsActivitesComponent)
+          },
+
+          // Historique des activités d'un enfant spécifique
+          {
+            path: 'enfant/:id/historique',
+            loadComponent: () => import('./pages/parent/activites/parent-enfant-historique.component')
+              .then(m => m.ParentEnfantHistoriqueComponent)
+          },
+
+          // Calendrier des activités d'un enfant spécifique
+          {
+            path: 'enfant/:id/calendrier',
+            loadComponent: () => import('./pages/parent/activites/parent-enfant-calendrier.component')
+              .then(m => m.ParentEnfantCalendrierComponent)
+          }
+        ]
+      },
+      {
+        path: 'menus',
+        loadComponent: () => import('./pages/parent/menus/parent-menus.component')
+          .then(m => m.ParentMenusComponent)
+      },
+
+      // ─────── PAIEMENTS ───────
+      /*{
+        path: 'paiements',
+        loadComponent: () => import('./pages/parent/paiements/parent-paiements.component')
+          .then(m => m.ParentPaiementsComponent)
+      }*/
+    ]
+  },
 
   // ==================== FALLBACK ====================
   { path: '**', redirectTo: 'login' }

@@ -1,0 +1,29 @@
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-3xl w-full max-w-lg p-6 shadow-xl">
+        <h2 class="text-2xl font-bold mb-4">{{ salle ? 'Modifier la salle' : 'Créer une nouvelle salle' }}</h2>
+        <form [formGroup]="form" (ngSubmit)="submit()">
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1" for="code">Code</label>
+                <input id="code" type="text" formControlName="code" class="w-full border rounded px-3 py-2" />
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1" for="nom">Nom</label>
+                <input id="nom" type="text" formControlName="nom" class="w-full border rounded px-3 py-2" />
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1" for="capacite">Capacité</label>
+                <input id="capacite" type="number" formControlName="capacite" class="w-full border rounded px-3 py-2" />
+            </div>
+            <div class="flex items-center mb-4">
+                <input id="is_active" type="checkbox" formControlName="is_active" class="mr-2" />
+                <label for="is_active" class="text-sm font-medium">Active</label>
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button type="button" (click)="router.navigate(['/admin/salles'])"
+                    class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Annuler</button>
+                <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+                    [disabled]="form.invalid">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>

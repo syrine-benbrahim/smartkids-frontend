@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { ParentPresencesApiService, EnfantWithStats } from '../../services/presences-parent.service';
+import { environment } from '../../../environments/environment';
+import { ChildStateService } from '../../services/child-state.service';
 
 interface ParentProfile {
   id: number;
@@ -440,6 +442,7 @@ interface ParentProfile {
 export class ParentDashboardComponent implements OnInit {
   private http = inject(HttpClient);
   private apiService = inject(ParentPresencesApiService);
+  private childState = inject(ChildStateService);
   router = inject(Router);
 
   enfants = signal<EnfantWithStats[]>([]);
@@ -456,7 +459,7 @@ export class ParentDashboardComponent implements OnInit {
     this.error.set(null);
 
     // Load profile first
-    this.http.get<{ success: boolean; data: ParentProfile }>('/api/parent/profile')
+    this.http.get<{ success: boolean; data: ParentProfile }>(`${environment.apiUrl}/parent/profile`)
       .subscribe({
         next: (response) => {
           console.log('Profile response:', response); // Debug log
@@ -496,16 +499,19 @@ export class ParentDashboardComponent implements OnInit {
   }
 
   viewEnfant(enfantId: number) {
+    this.childState.selectChild(enfantId);
     this.router.navigate(['/parent/enfants', enfantId, 'presences']);
   }
 
   viewPresences(event: Event, enfantId: number) {
     event.stopPropagation();
+    this.childState.selectChild(enfantId);
     this.router.navigate(['/parent/enfants', enfantId, 'presences']);
   }
 
   viewCalendar(event: Event, enfantId: number) {
     event.stopPropagation();
+    this.childState.selectChild(enfantId);
     this.router.navigate(['/parent/enfants', enfantId, 'presences', 'calendrier']);
   }
 

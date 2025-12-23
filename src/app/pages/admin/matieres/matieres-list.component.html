@@ -1,0 +1,141 @@
+<div class="space-y-6">
+    <!-- Header -->
+    <div
+        class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600 rounded-3xl p-6 shadow-xl border-4 border-blue-200">
+        <div class="flex items-center gap-4">
+            <div class="w-14 h-14 bg-white/20 backdrop-blur rounded-2xl flex items-center justify-center shadow-lg">
+                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+            </div>
+            <div>
+                <h2 class="text-3xl font-black text-white">Matières</h2>
+                <p class="text-white/80 text-sm font-medium">Gestion des matières scolaires</p>
+            </div>
+        </div>
+        <button
+            class="bg-white/20 hover:bg-white/30 backdrop-blur border-2 border-white/30 hover:border-white/50 text-white px-6 py-3 rounded-2xl font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center gap-2"
+            (click)="create()">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Nouvelle Matière</span>
+        </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-3xl p-6 shadow-sm border-4 border-blue-100">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div class="flex-1 w-full sm:w-auto">
+                <div class="relative">
+                    <div
+                        class="absolute left-3 top-1/2 transform -translate-y-1/2 w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <input
+                        class="w-full pl-12 pr-4 py-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 rounded-2xl text-sm font-medium placeholder-gray-500 transition-all"
+                        placeholder="Recherche par nom ou code..." [(ngModel)]="search" (ngModelChange)="reload()" />
+                </div>
+            </div>
+            <select
+                class="px-4 py-3 bg-gradient-to-r from-indigo-50 to-blue-50 border-2 border-indigo-200 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 rounded-2xl text-sm font-bold transition-all"
+                [(ngModel)]="statutFilter" (change)="reload()">
+                <option value="">Tous les statuts</option>
+                <option value="true">Actif</option>
+                <option value="false">Inactif</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-3xl shadow-sm border-4 border-blue-100 overflow-hidden">
+        <div class="bg-gradient-to-r from-blue-100 to-indigo-100 px-6 py-4 border-b-4 border-blue-200">
+            <div class="grid grid-cols-12 gap-4 text-sm font-black text-blue-900 uppercase tracking-wide">
+                <div class="col-span-4">Matière</div>
+                <div class="col-span-2">Code</div>
+                <div class="col-span-2">Coefficient</div>
+                <div class="col-span-2">Statut</div>
+                <div class="col-span-2">Actions</div>
+            </div>
+        </div>
+        <div class="divide-y divide-gray-100">
+            <div *ngFor="let m of items(); let i = index"
+                class="px-6 py-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all group">
+                <div class="grid grid-cols-12 gap-4 items-center">
+                    <!-- Nom + Color + Photo -->
+                    <div class="col-span-4 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold shadow-md"
+                            [style.background-color]="m.couleur || '#ccc'">
+                            <img *ngIf="m.photo" [src]="m.photo" class="w-full h-full object-cover rounded-xl" alt="">
+                            <span *ngIf="!m.photo">{{ m.nom.charAt(0) }}</span>
+                        </div>
+                        <div>
+                            <p class="font-bold text-gray-800">{{ m.nom }}</p>
+                        </div>
+                    </div>
+                    <div class="col-span-2 text-gray-600 font-medium">{{ m.code }}</div>
+                    <div class="col-span-2 font-bold text-gray-800">{{ m.coefficient }}</div>
+                    <div class="col-span-2">
+                        <span class="px-3 py-1 text-xs font-bold rounded-full border-2"
+                            [class]="m.actif ? 'bg-green-100 text-green-800 border-green-200' : 'bg-red-100 text-red-800 border-red-200'">
+                            {{ m.actif ? 'Actif' : 'Inactif' }}
+                        </span>
+                    </div>
+                    <div class="col-span-2 flex items-center gap-2">
+                        <button class="p-2 hover:bg-purple-100 rounded-xl transition-colors group/btn"
+                            (click)="openAssignModal(m)" title="Affecter à un niveau">
+                            <svg class="w-5 h-5 text-purple-600 group-hover/btn:scale-110 transition-transform"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                            </svg>
+                        </button>
+                        <button class="p-2 hover:bg-green-100 rounded-xl transition-colors group/btn"
+                            (click)="edit(m.id)" title="Modifier">
+                            <svg class="w-5 h-5 text-green-600 group-hover/btn:scale-110 transition-transform"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </button>
+                        <button class="p-2 hover:bg-red-100 rounded-xl transition-colors group/btn"
+                            (click)="remove(m.id, m.nom)" title="Supprimer">
+                            <svg class="w-5 h-5 text-red-600 group-hover/btn:scale-110 transition-transform" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div *ngIf="items().length === 0" class="text-center py-16">
+                <div class="text-8xl mb-4">🧪</div>
+                <p class="text-xl font-black text-gray-800 mb-2">Aucune matière trouvée</p>
+            </div>
+        </div>
+        <!-- Pagination -->
+        <div class="bg-white rounded-3xl p-6 shadow-sm border-4 border-blue-100">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="text-sm font-bold text-gray-700">Affichage de {{ items().length }} matière(s)</div>
+                <div class="flex items-center gap-3">
+                    <button class="px-5 py-2.5 bg-gradient-to-r from-gray-200 to-gray-300 ..." [disabled]="page() <= 1"
+                        (click)="prev()">Précédent</button>
+                    <div
+                        class="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl font-black shadow-md">
+                        Page {{ page() }}</div>
+                    <button class="px-5 py-2.5 bg-gradient-to-r from-gray-200 to-gray-300 ..."
+                        [disabled]="items().length < perPage" (click)="next()">Suivant</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<app-assign-niveau-modal *ngIf="selectedMatiereParams" [matiereId]="selectedMatiereParams.id"
+    [matiereNom]="selectedMatiereParams.nom" (closed)="closeAssignModal()" (assigned)="onAssigned()">
+</app-assign-niveau-modal>
