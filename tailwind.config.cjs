@@ -18,7 +18,12 @@ module.exports = {
 					700: '#126f85',
 					800: '#135a6b',
 					900: '#144a59'
-				}
+				},
+				tangerine: '#F08C21',
+				butter: '#F2D88F',
+				blush: '#E36888',
+				sea: '#6698CC',
+				matcha: '#B4B534'
 			}
 		}
 	},

@@ -1,4 +1,3 @@
-// src/app/pages/parent/menus/parent-menus.component.ts
 import { Component, inject, signal, OnInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -9,203 +8,171 @@ import { MenuParentService, MenuSemaine } from '../../../services/menu-parent.se
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <div class="space-y-8">
-      <!-- Header -->
-      <div class="bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 rounded-3xl p-8 lg:p-12 text-white shadow-2xl">
-        <div class="max-w-4xl">
-          <div class="flex items-center gap-3 mb-4">
-            <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-              <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-              </svg>
+    <div class="p-4 sm:p-8 space-y-12 animate-fade-in text-slate-800 dark:text-slate-100">
+      
+      <!-- Header Section -->
+      <div class="relative group">
+        <div class="absolute -inset-1 bg-gradient-to-r from-tangerine via-butter to-tangerine rounded-[3rem] blur opacity-10 group-hover:opacity-25 transition duration-1000"></div>
+        <div class="relative flex flex-col lg:flex-row items-center justify-between gap-8 p-10 card-fancy overflow-hidden">
+          <div class="flex items-center gap-8 relative z-10">
+            <div class="w-20 h-20 bg-gradient-to-br from-tangerine to-butter rounded-[1.8rem] flex items-center justify-center shadow-2xl shadow-tangerine/30 text-3xl font-black text-white">
+              🍱
             </div>
             <div>
-              <h1 class="text-4xl lg:text-5xl font-black tracking-tight">🍽️ Menus de la Semaine</h1>
-              <p class="text-orange-100 text-lg mt-2">Découvrez les repas préparés pour vos enfants</p>
+              <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight mb-3">
+                Menus de la Semaine
+              </h1>
+              <p class="text-lg text-slate-500 dark:text-slate-400 font-medium max-w-lg leading-relaxed">
+                Découvrez les repas équilibrés et savoureux préparés pour l'épanouissement de vos enfants.
+              </p>
             </div>
           </div>
-          
-          <!-- Filter Tabs -->
-          <div class="flex gap-3 mt-6 flex-wrap">
-            <button 
-              (click)="setFilter('both')"
-              [class.bg-white]="filterType() === 'both'"
-              [class.text-orange-600]="filterType() === 'both'"
-              [class.bg-white/20]="filterType() !== 'both'"
-              [class.text-white]="filterType() !== 'both'"
-              class="px-6 py-3 rounded-xl font-bold transition-all hover:scale-105">
-              📅 Tout Voir
+
+          <!-- Filter Controls -->
+          <div class="flex bg-slate-100 dark:bg-slate-800/60 p-1.5 rounded-2xl relative z-10">
+            <button (click)="setFilter('both')"
+                    [class]="filterType() === 'both' ? 'bg-white dark:bg-slate-700 shadow-md text-tangerine' : 'text-slate-500 hover:text-slate-700'"
+                    class="px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all">
+              Tout
             </button>
-            <button 
-              (click)="setFilter('lunch')"
-              [class.bg-white]="filterType() === 'lunch'"
-              [class.text-orange-600]="filterType() === 'lunch'"
-              [class.bg-white/20]="filterType() !== 'lunch'"
-              [class.text-white]="filterType() !== 'lunch'"
-              class="px-6 py-3 rounded-xl font-bold transition-all hover:scale-105">
-              🍱 Déjeuners
+            <button (click)="setFilter('lunch')"
+                    [class]="filterType() === 'lunch' ? 'bg-white dark:bg-slate-700 shadow-md text-tangerine' : 'text-slate-500 hover:text-slate-700'"
+                    class="px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all">
+              Déjeuners
             </button>
-            <button 
-              (click)="setFilter('snack')"
-              [class.bg-white]="filterType() === 'snack'"
-              [class.text-orange-600]="filterType() === 'snack'"
-              [class.bg-white/20]="filterType() !== 'snack'"
-              [class.text-white]="filterType() !== 'snack'"
-              class="px-6 py-3 rounded-xl font-bold transition-all hover:scale-105">
-              🍪 Goûters
+            <button (click)="setFilter('snack')"
+                    [class]="filterType() === 'snack' ? 'bg-white dark:bg-slate-700 shadow-md text-tangerine' : 'text-slate-500 hover:text-slate-700'"
+                    class="px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all">
+              Goûters
             </button>
           </div>
         </div>
       </div>
 
       <!-- Loading State -->
-      <div *ngIf="loading()" class="flex items-center justify-center py-20">
-        <div class="text-center">
-          <div class="relative w-24 h-24 mx-auto mb-6">
-            <div class="absolute inset-0 border-4 border-orange-200 rounded-full"></div>
-            <div class="absolute inset-0 border-4 border-orange-600 rounded-full border-t-transparent animate-spin"></div>
-          </div>
-          <p class="text-gray-600 font-medium text-lg">Chargement des menus...</p>
-        </div>
+      <div *ngIf="loading()" class="flex flex-col justify-center items-center py-20 space-y-4">
+        <div class="animate-spin rounded-full h-16 w-16 border-4 border-t-tangerine border-slate-200"></div>
+        <span class="text-slate-500 font-black text-xs uppercase tracking-widest animate-pulse">Préparation du menu...</span>
       </div>
 
       <!-- Error State -->
-      <div *ngIf="error()" class="bg-gradient-to-br from-red-50 to-pink-50 border-2 border-red-200 rounded-3xl p-8">
-        <div class="flex items-start gap-6">
-          <div class="w-16 h-16 bg-gradient-to-br from-red-500 to-pink-600 rounded-2xl flex items-center justify-center flex-shrink-0">
-            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-          </div>
-          <div class="flex-1">
-            <h3 class="text-2xl font-bold text-red-900 mb-2">Erreur</h3>
-            <p class="text-red-700 mb-4">{{ error() }}</p>
-            <button 
-              (click)="loadMenus()"
-              class="px-6 py-3 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl font-bold hover:shadow-lg transition-all">
-              Réessayer
-            </button>
-          </div>
+      <div *ngIf="error()" class="p-8 glass bg-blush/5 border-blush/20 rounded-[2.5rem] flex items-center gap-6">
+        <div class="w-16 h-16 bg-blush/10 rounded-2xl flex items-center justify-center text-3xl">⚠️</div>
+        <div>
+          <h3 class="text-lg font-black text-blush uppercase tracking-wider mb-1">Erreur de chargement</h3>
+          <p class="text-blush/80 font-bold mb-4">{{ error() }}</p>
+          <button (click)="loadMenus()"
+                  class="px-6 py-3 bg-blush text-white rounded-xl font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-blush/30">
+            Réessayer
+          </button>
         </div>
       </div>
 
       <!-- Empty State -->
       <div *ngIf="!loading() && !error() && filteredMenus().length === 0" 
-           class="text-center py-20 bg-gradient-to-br from-gray-50 to-orange-50 rounded-3xl border-2 border-dashed border-gray-300">
-        <div class="w-24 h-24 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center mx-auto mb-6">
-          <svg class="w-12 h-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-          </svg>
-        </div>
-        <h3 class="text-2xl font-bold text-gray-900 mb-3">Aucun menu disponible</h3>
-        <p class="text-gray-600 text-lg">Les menus de cette semaine ne sont pas encore publiés</p>
+           class="text-center py-20 card-fancy border-dashed border-2 border-white/20">
+        <div class="text-6xl mb-6 opacity-30">🥣</div>
+        <h3 class="text-2xl font-black mb-2">Menus non disponibles</h3>
+        <p class="text-slate-500 font-medium">Les menus pour cette période ne sont pas encore publiés.</p>
       </div>
 
-      <!-- Menus Grid -->
-      <div *ngIf="!loading() && !error() && filteredMenus().length > 0" class="grid gap-6">
+      <!-- Calendrier des Menus -->
+      <div *ngIf="!loading() && !error() && filteredMenus().length > 0" class="space-y-12">
         <div *ngFor="let menu of filteredMenus(); let i = index" 
-             class="bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-gray-100"
+             class="group relative animate-fade-in"
              [style.animation-delay]="i * 0.1 + 's'">
           
-          <!-- Date Header -->
-          <div class="bg-gradient-to-r from-orange-500 to-red-500 px-8 py-6">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-4">
-                <div class="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                  <span class="text-3xl">{{ getDayEmoji(menu.date_menu) }}</span>
-                </div>
-                <div>
-                  <h3 class="text-2xl font-black text-white">{{ formatDate(menu.date_menu) }}</h3>
-                  <p class="text-orange-100 font-medium">{{ getDayName(menu.date_menu) }}</p>
-                </div>
-              </div>
-              <div class="hidden sm:flex gap-2">
-                <span *ngIf="menu.lunch && shouldShowLunch()" class="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-xl text-sm font-bold">
-                  🍱 Déjeuner
-                </span>
-                <span *ngIf="menu.snack && shouldShowSnack()" class="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-xl text-sm font-bold">
-                  🍪 Goûter
-                </span>
-              </div>
+          <div class="flex items-center gap-4 mb-6">
+            <div class="w-12 h-12 bg-tangerine/10 rounded-2xl flex items-center justify-center text-2xl">
+              {{ getDayEmoji(menu.date_menu) }}
+            </div>
+            <div>
+              <h2 class="text-2xl font-black tracking-tight leading-none group-hover:text-tangerine transition-colors">{{ getDayName(menu.date_menu) }}</h2>
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">{{ formatDate(menu.date_menu) }}</p>
             </div>
           </div>
 
-          <!-- Menus Content -->
-          <div class="p-8">
-            <div class="grid md:grid-cols-2 gap-8">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Déjeuner -->
+            <div *ngIf="menu.lunch && shouldShowLunch()" 
+                 class="relative glass dark:bg-slate-800/40 rounded-[2.5rem] border-white/60 p-8 hover:border-sea transition-all shadow-sm">
+              <div class="flex items-center gap-4 mb-6">
+                <div class="w-10 h-10 bg-sea/10 rounded-xl flex items-center justify-center text-sea">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.703 2.703 0 01-3 0 2.703 2.703 0 01-3 0 2.703 2.703 0 01-3 0 2.704 2.704 0 01-1.5-.454V6.454a2.704 2.704 0 011.5-.454 2.703 2.703 0 013 0 2.703 2.703 0 013 0 2.703 2.703 0 013 0 2.703 2.703 0 013 0 2.704 2.704 0 011.5.454v9.092z"/>
+                  </svg>
+                </div>
+                <h4 class="text-lg font-black uppercase tracking-widest text-slate-900 dark:text-white">Déjeuner</h4>
+              </div>
               
-              <!-- Déjeuner -->
-              <div *ngIf="menu.lunch && shouldShowLunch()" 
-                   class="space-y-4">
-                <div class="flex items-center gap-3 mb-4">
-                  <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl flex items-center justify-center">
-                    <span class="text-2xl">🍱</span>
-                  </div>
-                  <h4 class="text-2xl font-black text-gray-900">Déjeuner</h4>
+              <div class="space-y-6">
+                <div class="p-6 bg-sea/5 dark:bg-sea/10 rounded-2xl border border-sea/10">
+                  <h5 class="text-[9px] font-black text-sea uppercase tracking-widest mb-2 leading-none">Menu du jour</h5>
+                  <p class="text-lg font-bold text-slate-800 dark:text-slate-100 leading-relaxed">{{ menu.lunch.description }}</p>
                 </div>
-                
-                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-6">
-                  <h5 class="text-sm font-bold text-blue-900 uppercase tracking-wide mb-3">Description</h5>
-                  <p class="text-gray-800 text-lg leading-relaxed">{{ menu.lunch.description }}</p>
-                </div>
-
-                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6">
-                  <h5 class="text-sm font-bold text-green-900 uppercase tracking-wide mb-3">Ingrédients</h5>
-                  <p class="text-gray-800 leading-relaxed">{{ menu.lunch.ingredients }}</p>
+                <div class="flex items-start gap-4">
+                  <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest pt-1">Allergènes</div>
+                  <p class="text-xs font-medium text-slate-500 dark:text-slate-400 italic">Contient : {{ menu.lunch.ingredients }}</p>
                 </div>
               </div>
+            </div>
 
-              <!-- Goûter -->
-              <div *ngIf="menu.snack && shouldShowSnack()" 
-                   class="space-y-4">
-                <div class="flex items-center gap-3 mb-4">
-                  <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-pink-600 rounded-xl flex items-center justify-center">
-                    <span class="text-2xl">🍪</span>
-                  </div>
-                  <h4 class="text-2xl font-black text-gray-900">Goûter</h4>
+            <!-- Goûter -->
+            <div *ngIf="menu.snack && shouldShowSnack()" 
+                 class="relative glass dark:bg-slate-800/40 rounded-[2.5rem] border-white/60 p-8 hover:border-tangerine transition-all shadow-sm">
+              <div class="flex items-center gap-4 mb-6">
+                <div class="w-10 h-10 bg-tangerine/10 rounded-xl flex items-center justify-center text-tangerine">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v13m0-13V6a2 2 0 114 0v2m-4 0a2 2 0 10-4 0v2m4-2h4m-4 0H8m4 0v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
                 </div>
-                
-                <div class="bg-gradient-to-br from-orange-50 to-pink-50 rounded-2xl p-6">
-                  <h5 class="text-sm font-bold text-orange-900 uppercase tracking-wide mb-3">Description</h5>
-                  <p class="text-gray-800 text-lg leading-relaxed">{{ menu.snack.description }}</p>
+                <h4 class="text-lg font-black uppercase tracking-widest text-slate-900 dark:text-white">Goûter</h4>
+              </div>
+              
+              <div class="space-y-6">
+                <div class="p-6 bg-tangerine/5 dark:bg-tangerine/10 rounded-2xl border border-tangerine/10">
+                  <h5 class="text-[9px] font-black text-tangerine uppercase tracking-widest mb-2 leading-none">Douceur de l'après-midi</h5>
+                  <p class="text-lg font-bold text-slate-800 dark:text-slate-100 leading-relaxed">{{ menu.snack.description }}</p>
                 </div>
-
-                <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6">
-                  <h5 class="text-sm font-bold text-purple-900 uppercase tracking-wide mb-3">Ingrédients</h5>
-                  <p class="text-gray-800 leading-relaxed">{{ menu.snack.ingredients }}</p>
+                <div class="flex items-start gap-4">
+                  <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest pt-1">Allergènes</div>
+                  <p class="text-xs font-medium text-slate-500 dark:text-slate-400 italic">Contient : {{ menu.snack.ingredients }}</p>
                 </div>
               </div>
+            </div>
 
-              <!-- Empty State pour un type non disponible -->
-              <div *ngIf="!menu.lunch && shouldShowLunch()" 
-                   class="flex items-center justify-center p-8 bg-gray-50 rounded-2xl">
-                <p class="text-gray-500 font-medium">Aucun déjeuner prévu</p>
-              </div>
-
-              <div *ngIf="!menu.snack && shouldShowSnack()" 
-                   class="flex items-center justify-center p-8 bg-gray-50 rounded-2xl">
-                <p class="text-gray-500 font-medium">Aucun goûter prévu</p>
-              </div>
+            <!-- Fallback empty states -->
+            <div *ngIf="!menu.lunch && shouldShowLunch()" class="card-fancy p-8 flex items-center justify-center border-dashed border-2 border-white/20 opacity-40">
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Aucun déjeuner programmé</p>
+            </div>
+            <div *ngIf="!menu.snack && shouldShowSnack()" class="card-fancy p-8 flex items-center justify-center border-dashed border-2 border-white/20 opacity-40">
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Aucun goûter programmé</p>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Info Card -->
-      <div class="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-3xl p-8">
-        <div class="flex items-start gap-6">
-          <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl flex items-center justify-center flex-shrink-0">
-            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      <!-- Bottom Info -->
+      <div class="card-fancy p-8 border-white/40 shadow-xl overflow-hidden relative">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-sea/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+        <div class="flex flex-col md:flex-row items-center gap-8 relative z-10">
+          <div class="w-16 h-16 bg-sea/10 rounded-2xl flex items-center justify-center text-sea">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
           </div>
-          <div class="flex-1">
-            <h3 class="text-2xl font-bold text-blue-900 mb-3">À propos des menus</h3>
-            <div class="space-y-2 text-blue-800">
-              <p>• Les menus sont préparés avec soin par notre équipe de cuisine</p>
-              <p>• Tous les repas sont équilibrés et adaptés aux besoins nutritionnels des enfants</p>
-              <p>• En cas d'allergie alimentaire, merci de nous contacter</p>
-              <p>• Les menus peuvent être modifiés selon les disponibilités des produits</p>
+          <div class="flex-1 text-center md:text-left">
+            <h3 class="text-xl font-black mb-2">Engagement Qualité</h3>
+            <p class="text-slate-500 dark:text-slate-400 font-medium">Nos repas sont élaborés par des nutritionnistes pour garantir un équilibre parfait. Produits frais et locaux privilégiés.</p>
+          </div>
+          <div class="flex flex-col gap-2 min-w-[200px]">
+            <div class="flex items-center gap-2 text-[10px] font-black uppercase text-matcha">
+              <div class="w-1.5 h-1.5 bg-matcha rounded-full animate-pulse"></div>
+              Produits Frais
+            </div>
+            <div class="flex items-center gap-2 text-[10px] font-black uppercase text-sea">
+              <div class="w-1.5 h-1.5 bg-sea rounded-full animate-pulse"></div>
+              Équilibre Nutri
             </div>
           </div>
         </div>
@@ -214,19 +181,11 @@ import { MenuParentService, MenuSemaine } from '../../../services/menu-parent.se
   `,
   styles: [`
     @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-
-    .grid > div {
-      animation: fadeInUp 0.6s ease-out forwards;
-      opacity: 0;
+    .animate-fade-in {
+      animation: fadeInUp 0.8s ease-out forwards;
     }
   `]
 })
@@ -238,15 +197,12 @@ export class ParentMenusComponent implements OnInit {
   error = signal<string | null>(null);
   filterType = signal<'both' | 'lunch' | 'snack'>('both');
 
-  // Computed signal pour filtrer les menus
   filteredMenus = signal<MenuSemaine[]>([]);
 
   constructor() {
-    // Utiliser effect pour réagir aux changements de filtre
     effect(() => {
-      const filter = this.filterType();
       this.applyFilter();
-    });
+    }, { allowSignalWrites: true });
   }
 
   ngOnInit() {
@@ -264,7 +220,6 @@ export class ParentMenusComponent implements OnInit {
     if (filter === 'both') {
       this.filteredMenus.set(allMenus);
     } else {
-      // Filtrer les menus qui ont au moins le type demandé
       const filtered = allMenus.filter(menu => {
         if (filter === 'lunch') return menu.lunch !== null;
         if (filter === 'snack') return menu.snack !== null;
@@ -278,11 +233,10 @@ export class ParentMenusComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
-    // Toujours charger les deux types
     this.menuService.getCurrentWeekMenu().subscribe({
       next: (response) => {
         if (response.success) {
-          this.menus.set(response.data);
+          this.menus.set(response.data || []);
           this.applyFilter();
         }
         this.loading.set(false);
@@ -305,8 +259,8 @@ export class ParentMenusComponent implements OnInit {
 
   formatDate(dateStr: string): string {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('fr-FR', { 
-      day: '2-digit', 
+    return date.toLocaleDateString('fr-FR', {
+      day: '2-digit',
       month: 'long',
       year: 'numeric'
     });
@@ -320,7 +274,7 @@ export class ParentMenusComponent implements OnInit {
   getDayEmoji(dateStr: string): string {
     const date = new Date(dateStr);
     const day = date.getDay();
-    const emojis = ['😴', '💪', '🔥', '🌟', '🎯', '🎉', '😴']; // Dimanche -> Samedi
+    const emojis = ['😴', '🥐', '🍲', '🥦', '🥘', '🐟', '🥞']; // Sun -> Sat
     return emojis[day];
   }
 }

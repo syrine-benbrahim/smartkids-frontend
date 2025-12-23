@@ -60,6 +60,8 @@ export class AuthService {
 			tap((res) => {
 				this.token = res.token;
 				this.setRole(res.user.role);
+				localStorage.setItem('sk_user_name', res.user.name);
+				localStorage.setItem('sk_user_email', res.user.email);
 			})
 		);
 	}
@@ -69,6 +71,8 @@ export class AuthService {
 			tap((res) => {
 				this.token = res.token;
 				this.setRole(res.user.role);
+				localStorage.setItem('sk_user_name', res.user.name);
+				localStorage.setItem('sk_user_email', res.user.email);
 			})
 		);
 	}
@@ -82,6 +86,8 @@ export class AuthService {
 			tap(() => {
 				this.token = null;
 				this.setRole(null);
+				localStorage.removeItem('sk_user_name');
+				localStorage.removeItem('sk_user_email');
 			})
 		);
 	}

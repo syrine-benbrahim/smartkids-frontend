@@ -1,12 +1,11 @@
-// src/app/pages/parent/presences/parent-presences-calendrier.component.ts
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { 
-  ParentPresencesApiService, 
-  JourCalendrier, 
-  CalendrierResponse 
+import {
+  ParentPresencesApiService,
+  JourCalendrier,
+  CalendrierResponse
 } from '../../../services/presences-parent.service';
 
 @Component({
@@ -14,179 +13,170 @@ import {
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="space-y-6">
+    <div class="p-4 sm:p-8 space-y-12 animate-fade-in text-slate-800 dark:text-slate-100">
       
-      <!-- Header with back button -->
-      <div class="flex items-center gap-4">
-        <button 
-          (click)="goBack()"
-          class="p-2 hover:bg-gray-100 rounded-xl transition">
-          <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-          </svg>
-        </button>
-        <div class="flex-1">
-          <h1 class="text-3xl font-bold text-gray-900">Calendrier des Présences</h1>
-          <p *ngIf="moisLibelle()" class="text-gray-600 mt-1">{{ moisLibelle() }}</p>
-        </div>
-      </div>
-
-      <!-- Month Navigation -->
-      <div class="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/20 shadow-xl p-6">
-        <div class="flex items-center justify-between gap-4">
-          <button 
-            (click)="previousMonth()"
-            class="p-3 hover:bg-gray-100 rounded-xl transition">
-            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+      <!-- Premium Header & Nav -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-8">
+        <div class="flex items-center gap-6">
+          <button (click)="goBack()" 
+                  class="w-12 h-12 glass dark:bg-slate-800 rounded-2xl flex items-center justify-center text-slate-400 hover:text-matcha hover:scale-110 transition-all border-white/40 border">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
           </button>
-          
-          <div class="flex-1 text-center">
-            <input 
-              type="month" 
-              [(ngModel)]="currentMonth"
-              (change)="loadCalendrier()"
-              class="px-4 py-3 rounded-xl border border-gray-300 focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition">
-          </div>
-          
-          <button 
-            (click)="nextMonth()"
-            class="p-3 hover:bg-gray-100 rounded-xl transition">
-            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- Loading State -->
-      <div *ngIf="loading()" class="flex items-center justify-center py-12">
-        <div class="text-center">
-          <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-pink-500 mx-auto mb-4"></div>
-          <p class="text-gray-600">Chargement du calendrier...</p>
-        </div>
-      </div>
-
-      <!-- Error State -->
-      <div *ngIf="error()" class="bg-red-50 border border-red-200 rounded-2xl p-6">
-        <div class="flex items-start gap-4">
-          <div class="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center flex-shrink-0">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-          </div>
-          <div class="flex-1">
-            <h3 class="text-lg font-bold text-red-900 mb-1">Erreur</h3>
-            <p class="text-red-700">{{ error() }}</p>
-            <button 
-              (click)="loadCalendrier()"
-              class="mt-3 px-4 py-2 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition">
-              Réessayer
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Statistics -->
-      <div *ngIf="!loading() && !error() && statistiques()" class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-3xl p-6">
-          <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mb-3">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-            </svg>
-          </div>
-          <h3 class="text-2xl font-bold text-gray-900 mb-1">{{ statistiques()?.total_jours_ecole || 0 }}</h3>
-          <p class="text-sm text-gray-600 font-medium">Jours d'école</p>
-        </div>
-
-        <div class="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-3xl p-6">
-          <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mb-3">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-          </div>
-          <h3 class="text-2xl font-bold text-gray-900 mb-1">{{ statistiques()?.jours_presents || 0 }}</h3>
-          <p class="text-sm text-gray-600 font-medium">Présent</p>
-        </div>
-
-        <div class="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200 rounded-3xl p-6">
-          <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mb-3">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </div>
-          <h3 class="text-2xl font-bold text-gray-900 mb-1">{{ statistiques()?.jours_absents || 0 }}</h3>
-          <p class="text-sm text-gray-600 font-medium">Absent</p>
-        </div>
-
-        <div class="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 rounded-3xl p-6">
-          <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mb-3">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-            </svg>
-          </div>
-          <h3 class="text-2xl font-bold text-gray-900 mb-1">{{ statistiques()?.taux_presence || 0 }}%</h3>
-          <p class="text-sm text-gray-600 font-medium">Taux</p>
-        </div>
-      </div>
-
-      <!-- Calendar Grid -->
-      <div *ngIf="!loading() && !error()" class="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/20 shadow-xl overflow-hidden">
-        <div class="p-6">
-          <!-- Days of Week Header -->
-          <div class="grid grid-cols-7 gap-2 mb-4">
-            <div *ngFor="let day of ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']" 
-                 class="text-center text-sm font-bold text-gray-700 py-2">
-              {{ day }}
+          <div>
+            <h1 class="text-3xl sm:text-4xl font-black tracking-tight mb-2">Calendrier de Présence</h1>
+            <div class="flex items-center gap-3">
+              <div class="w-1.5 h-1.5 bg-matcha rounded-full animate-pulse"></div>
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]" *ngIf="moisLibelle()">
+                Période : {{ moisLibelle() }}
+              </p>
             </div>
           </div>
+        </div>
 
-          <!-- Calendar Days -->
-          <div class="grid grid-cols-7 gap-2">
+        <div class="flex items-center bg-slate-100 dark:bg-slate-800/60 p-1.5 rounded-2xl border border-white/20 shadow-sm">
+          <button (click)="previousMonth()" 
+                  class="p-4 hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all text-slate-500 hover:text-matcha active:scale-95">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          
+          <div class="px-6 relative group">
+            <input type="month" [(ngModel)]="currentMonth" (change)="loadCalendrier()"
+                   class="bg-transparent font-black text-sm uppercase tracking-widest text-center cursor-pointer focus:outline-none hover:text-matcha transition-colors">
+            <div class="absolute inset-x-0 -bottom-1 h-0.5 bg-matcha/40 scale-x-0 group-hover:scale-x-100 transition-transform"></div>
+          </div>
+
+          <button (click)="nextMonth()" 
+                  class="p-4 hover:bg-white dark:hover:bg-slate-700 rounded-xl transition-all text-slate-500 hover:text-matcha active:scale-95">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading Tracker -->
+      <div *ngIf="loading()" class="flex flex-col justify-center items-center py-24 animate-pulse">
+        <div class="w-16 h-16 border-4 border-t-matcha border-slate-200 rounded-full animate-spin mb-4"></div>
+        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Analyse du registre temporel...</span>
+      </div>
+
+      <!-- Stats Matrix -->
+      <div *ngIf="!loading() && !error() && statistiques()" class="grid grid-cols-2 lg:grid-cols-4 gap-8">
+        <div class="group relative card-fancy p-8 hover:translate-y-[-4px] transition-all border-white/40 overflow-hidden">
+          <div class="absolute -right-4 -top-4 w-24 h-24 bg-sea/5 rounded-full blur-2xl group-hover:bg-sea/10 transition-colors"></div>
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Jours d'école</p>
+          <div class="flex items-end gap-3">
+            <span class="text-4xl font-black leading-none">{{ statistiques()?.total_jours_ecole || 0 }}</span>
+            <span class="text-sea text-sm mb-1">📅</span>
+          </div>
+        </div>
+
+        <div class="group relative card-fancy p-8 hover:translate-y-[-4px] transition-all border-white/40 overflow-hidden text-matcha">
+          <div class="absolute -right-4 -top-4 w-24 h-24 bg-matcha/5 rounded-full blur-2xl group-hover:bg-matcha/10 transition-colors"></div>
+          <p class="text-[10px] font-black opacity-60 uppercase tracking-widest mb-4">Presents</p>
+          <div class="flex items-end gap-3">
+            <span class="text-4xl font-black leading-none">{{ statistiques()?.jours_presents || 0 }}</span>
+            <span class="text-sm mb-1">✅</span>
+          </div>
+        </div>
+
+        <div class="group relative card-fancy p-8 hover:translate-y-[-4px] transition-all border-white/40 overflow-hidden text-blush">
+          <div class="absolute -right-4 -top-4 w-24 h-24 bg-blush/5 rounded-full blur-2xl group-hover:bg-blush/10 transition-colors"></div>
+          <p class="text-[10px] font-black opacity-60 uppercase tracking-widest mb-4">Absents</p>
+          <div class="flex items-end gap-3">
+            <span class="text-4xl font-black leading-none">{{ statistiques()?.jours_absents || 0 }}</span>
+            <span class="text-sm mb-1">❌</span>
+          </div>
+        </div>
+
+        <div class="group relative card-fancy p-8 hover:translate-y-[-4px] transition-all border-white/40 overflow-hidden text-butter">
+          <div class="absolute -right-4 -top-4 w-24 h-24 bg-butter/5 rounded-full blur-2xl group-hover:bg-butter/10 transition-colors"></div>
+          <p class="text-[10px] font-black opacity-60 uppercase tracking-widest mb-4">Assiduité</p>
+          <div class="flex items-end gap-3">
+            <span class="text-4xl font-black leading-none">{{ statistiques()?.taux_presence || 0 }}%</span>
+            <span class="text-sm mb-1">📈</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Calendar Grid -->
+      <div *ngIf="!loading() && !error()" class="space-y-12">
+        <div class="glass dark:bg-slate-800/40 rounded-[3rem] p-4 sm:p-8 border-white/60 shadow-xl overflow-hidden relative">
+          <div class="absolute top-0 right-0 w-64 h-64 bg-matcha/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+          
+          <div class="grid grid-cols-7 gap-3 sm:gap-6 relative z-10">
+            <!-- Day Headers -->
+            <div *ngFor="let day of ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']" 
+                 class="py-4 text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">
+              {{ day }}
+            </div>
+            
+            <!-- Calendar Days -->
             <div *ngFor="let jour of calendrier()" 
-                 [class]="getDayClass(jour)"
-                 class="aspect-square p-2 rounded-xl transition-all duration-200 cursor-pointer hover:shadow-md">
-              <div class="flex flex-col items-center justify-center h-full">
-                <span class="text-sm font-bold mb-1">{{ jour.jour }}</span>
-                <div *ngIf="jour.a_presence" class="w-6 h-6">
-                  <svg *ngIf="jour.statut === 'present'" class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                  </svg>
-                  <svg *ngIf="jour.statut === 'absent'" class="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                  </svg>
-                </div>
+                 [class]="getDayCardClass(jour)"
+                 class="aspect-square rounded-3xl border transition-all duration-300 group hover:scale-105 active:scale-95 relative cursor-default flex flex-col items-center justify-center gap-2 p-2">
+              
+              <span class="text-sm sm:text-lg font-black group-hover:scale-110 transition-transform"
+                    [class]="jour.est_weekend ? 'text-slate-300' : (jour.a_presence ? 'text-slate-900 dark:text-white' : 'text-slate-400')">
+                {{ jour.jour }}
+              </span>
+
+              <div *ngIf="jour.a_presence" class="w-8 h-8 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:rotate-12 transition-transform"
+                   [class]="jour.statut === 'present' ? 'bg-matcha text-white' : 'bg-blush text-white'">
+                   <svg *ngIf="jour.statut === 'present'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                   <svg *ngIf="jour.statut === 'absent'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
+              </div>
+
+              <!-- Tooltip on Hover -->
+              <div class="absolute inset-0 z-20 opacity-0 group-hover:opacity-100 transition-opacity bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm rounded-3xl flex items-center justify-center p-2 pointer-events-none text-center">
+                 <p class="text-[8px] font-black uppercase tracking-widest" [class]="jour.statut === 'present' ? 'text-matcha' : 'text-blush'">
+                   {{ jour.statut === 'present' ? 'Présent' : (jour.statut === 'absent' ? 'Absent' : '') }}
+                 </p>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Legend -->
-      <div *ngIf="!loading() && !error()" class="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/20 shadow-xl p-6">
-        <h3 class="text-lg font-bold text-gray-900 mb-4">Légende</h3>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="flex items-center gap-3">
-            <div class="w-8 h-8 bg-green-100 border-2 border-green-500 rounded-lg"></div>
-            <span class="text-sm text-gray-700">Présent</span>
-          </div>
-          <div class="flex items-center gap-3">
-            <div class="w-8 h-8 bg-red-100 border-2 border-red-500 rounded-lg"></div>
-            <span class="text-sm text-gray-700">Absent</span>
-          </div>
-          <div class="flex items-center gap-3">
-            <div class="w-8 h-8 bg-gray-100 border-2 border-gray-300 rounded-lg"></div>
-            <span class="text-sm text-gray-700">Weekend</span>
-          </div>
-          <div class="flex items-center gap-3">
-            <div class="w-8 h-8 bg-white border-2 border-gray-200 rounded-lg"></div>
-            <span class="text-sm text-gray-700">Pas de données</span>
-          </div>
+        <!-- Legend Deck -->
+        <div class="flex flex-wrap items-center gap-8 px-10">
+           <div class="flex items-center gap-3">
+              <div class="w-8 h-8 bg-matcha rounded-xl"></div>
+              <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Présence validée</span>
+           </div>
+           <div class="flex items-center gap-3">
+              <div class="w-8 h-8 bg-blush rounded-xl"></div>
+              <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Absence notée</span>
+           </div>
+           <div class="flex items-center gap-3">
+              <div class="w-8 h-8 bg-slate-100 dark:bg-slate-700/50 rounded-xl border border-dashed border-slate-300"></div>
+              <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Weekend / Récupération</span>
+           </div>
         </div>
       </div>
+
+      <!-- Error State -->
+      <div *ngIf="error()" class="p-20 text-center card-fancy border-blush/20 space-y-6">
+        <div class="text-6xl text-blush">🚫</div>
+        <h3 class="text-2xl font-black uppercase tracking-tight text-blush">Erreur de Registre</h3>
+        <p class="text-slate-500 font-medium">{{ error() }}</p>
+        <button (click)="loadCalendrier()" class="px-8 py-4 bg-blush text-white rounded-2xl font-black text-[10px] uppercase tracking-widest">Réactualiser</button>
+      </div>
+
     </div>
-  `
+  `,
+  styles: [`
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fadeInUp 0.8s ease-out forwards;
+    }
+  `]
 })
 export class ParentPresencesCalendrierComponent implements OnInit {
   private route = inject(ActivatedRoute);
@@ -217,11 +207,7 @@ export class ParentPresencesCalendrierComponent implements OnInit {
   loadCalendrier() {
     this.loading.set(true);
     this.error.set(null);
-
-    this.apiService.getCalendrierEnfant(
-      this.enfantId(),
-      this.currentMonth
-    ).subscribe({
+    this.apiService.getCalendrierEnfant(this.enfantId(), this.currentMonth).subscribe({
       next: (response) => {
         if (response.success) {
           this.calendrier.set(response.data.calendrier);
@@ -231,9 +217,8 @@ export class ParentPresencesCalendrierComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err: any) => {
-        this.error.set('Erreur lors du chargement du calendrier');
+        this.error.set('Impossible de synchroniser les données du mois sélectionné.');
         this.loading.set(false);
-        console.error('Error loading calendar:', err);
       }
     });
   }
@@ -256,25 +241,11 @@ export class ParentPresencesCalendrierComponent implements OnInit {
     this.router.navigate(['/parent/enfants', this.enfantId(), 'presences']);
   }
 
-  getDayClass(jour: JourCalendrier): string {
-    const baseClass = 'border-2 ';
-    
-    if (jour.est_weekend) {
-      return baseClass + 'bg-gray-100 border-gray-300 opacity-50';
-    }
-    
-    if (!jour.a_presence) {
-      return baseClass + 'bg-white border-gray-200 hover:border-gray-300';
-    }
-    
-    if (jour.statut === 'present') {
-      return baseClass + 'bg-green-50 border-green-500 hover:bg-green-100';
-    }
-    
-    if (jour.statut === 'absent') {
-      return baseClass + 'bg-red-50 border-red-500 hover:bg-red-100';
-    }
-    
-    return baseClass + 'bg-white border-gray-200';
+  getDayCardClass(jour: JourCalendrier): string {
+    if (jour.est_weekend) return 'bg-slate-50 dark:bg-slate-800/20 border-slate-200 dark:border-slate-700/50 opacity-40';
+    if (!jour.a_presence) return 'bg-white/40 dark:bg-slate-700/30 border-white/60 dark:border-white/10';
+    if (jour.statut === 'present') return 'bg-matcha/5 border-matcha/30 shadow-inner';
+    if (jour.statut === 'absent') return 'bg-blush/5 border-blush/30 shadow-inner';
+    return 'bg-white/40 border-white/60';
   }
 }

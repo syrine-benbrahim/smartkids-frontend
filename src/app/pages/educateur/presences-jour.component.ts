@@ -8,156 +8,126 @@ import { PresenceService } from '../../services/presence.service';
   standalone: true,
   imports: [CommonModule, RouterModule],
   template: `
-<div class="min-h-screen bg-gradient-to-br from-orange-100 via-yellow-50 to-red-100 p-4 sm:p-6">
-  <div class="max-w-6xl mx-auto">
-    <!-- Header -->
-    <div class="relative mb-8">
-      <div class="absolute -top-4 -left-4 w-16 h-16 bg-orange-300 rounded-full opacity-60 animate-bounce"></div>
-      <div class="absolute -top-2 right-10 w-12 h-12 bg-yellow-300 rounded-full opacity-60 animate-bounce" style="animation-delay: 0.5s;"></div>
-      
-      <div class="card relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-r from-orange-500/10 via-yellow-500/10 to-red-500/10"></div>
-        <div class="relative flex flex-col lg:flex-row items-center justify-between gap-6">
-          <div class="flex items-center gap-4">
-            <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg">
-              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-            </div>
-            <div>
-              <h1 class="text-3xl font-black text-gray-800 tracking-tight">
-                Présences du Jour ☀️
-              </h1>
-              <p class="text-gray-600 font-medium">
-                Vue d'ensemble rapide - {{ getCurrentDate() }}
-              </p>
-            </div>
-          </div>
-          <button
-            class="btn-primary bg-gradient-to-r from-purple-400 to-blue-400 hover:from-purple-500 hover:to-blue-500 text-white px-6 py-3 rounded-2xl font-bold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 flex items-center gap-2"
-            (click)="back()"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-            </svg>
-            Retour
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Vue d'ensemble toutes classes -->
-    <div *ngIf="!loading() && !error() && classes().length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div 
-        *ngFor="let classe of classes()" 
-        class="group bg-white/90 backdrop-blur rounded-2xl border border-white/60 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 overflow-hidden cursor-pointer"
-        (click)="goToClasse(classe.id)"
-      >
-        <!-- Header de la carte -->
-        <div class="p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10">
-          <div class="flex items-center justify-between">
-            <div>
-              <h3 class="text-xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors">
-                {{ classe.nom }}
-              </h3>
-              <p class="text-sm text-gray-600">{{ classe.niveau }}</p>
-            </div>
-            <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <!-- Stats présences du jour -->
-        <div class="p-4 space-y-4">
-          <!-- État des présences -->
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-gray-600">Présences prises</span>
-            <div class="flex items-center gap-2">
-              <div class="w-2 h-2 rounded-full"
-                   [class]="getPresenceStatus(classe) === 'complete' ? 'bg-green-500' : 
-                           getPresenceStatus(classe) === 'partial' ? 'bg-yellow-500' : 'bg-gray-400'">
-              </div>
-              <span class="text-sm font-medium" 
-                    [class]="getPresenceStatus(classe) === 'complete' ? 'text-green-600' : 
-                            getPresenceStatus(classe) === 'partial' ? 'text-yellow-600' : 'text-gray-600'">
-                {{ getPresenceStatusText(classe) }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Statistiques -->
-          <div class="space-y-2">
-            <div class="flex justify-between text-sm">
-              <span class="text-gray-600">Total enfants</span>
-              <span class="font-medium">{{ classe.nombre_enfants }}</span>
-            </div>
-            <div class="flex justify-between text-sm">
-              <span class="text-gray-600">Présences marquées</span>
-              <span class="font-medium">{{ classe.presences_prises || 0 }}</span>
-            </div>
-          </div>
-
-          <!-- Barre de progression -->
-          <div class="space-y-1">
-            <div class="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                class="h-2 rounded-full transition-all duration-300"
-                [class]="getProgressBarColor(classe)"
-                [style.width.%]="getProgressPercentage(classe)"
-              ></div>
-            </div>
-            <div class="text-xs text-center text-gray-600">
-              {{ getProgressPercentage(classe) }}% complété
-            </div>
-          </div>
-
-          <!-- Action -->
-          <button
-            class="w-full mt-4 bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white py-3 px-4 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2"
-            (click)="goToClasse(classe.id); $event.stopPropagation()"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-            </svg>
-            {{ getProgressPercentage(classe) === 100 ? 'Voir détails' : 'Marquer présences' }}
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- État vide -->
-    <div *ngIf="!loading() && !error() && classes().length === 0" class="text-center py-16">
-      <div class="w-24 h-24 mx-auto bg-gradient-to-br from-gray-300 to-gray-400 rounded-3xl flex items-center justify-center mb-6">
-        <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-        </svg>
-      </div>
-      <h3 class="text-xl font-bold text-gray-800 mb-2">Aucune classe assignée</h3>
-      <p class="text-gray-600">Vous n'avez pas encore de classes assignées.</p>
-    </div>
-
-    <!-- État de chargement -->
-    <div *ngIf="loading()" class="flex justify-center items-center py-16">
-      <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-500"></div>
-      <span class="ml-4 text-gray-600 font-medium">Chargement des présences du jour...</span>
-    </div>
-
-    <!-- État d'erreur -->
-    <div *ngIf="error()" class="p-6 bg-red-50 border-2 border-red-200 rounded-2xl">
-      <div class="flex items-center gap-3">
-        <div class="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
-          <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+<div class="p-4 sm:p-8 space-y-10 animate-fade-in text-slate-800 dark:text-slate-100">
+  <!-- Header -->
+  <div class="relative group">
+    <div class="absolute -inset-1 bg-gradient-to-r from-tangerine via-blush to-sea rounded-[3rem] blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+    <div class="relative flex flex-col lg:flex-row items-center justify-between gap-8 p-10 card-fancy overflow-hidden">
+      <div class="flex items-center gap-8 relative z-10">
+        <div class="w-20 h-20 bg-gradient-to-br from-tangerine to-blush rounded-[1.8rem] flex items-center justify-center shadow-2xl shadow-tangerine/30 transform group-hover:rotate-6 transition-transform">
+          <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
         </div>
         <div>
-          <p class="text-red-700 font-bold">Erreur</p>
-          <p class="text-red-600 text-sm">{{ error() }}</p>
+          <h1 class="text-3xl sm:text-4xl font-black tracking-tight mb-2">
+            Présences du Jour <span class="inline-block animate-pulse">☀️</span>
+          </h1>
+          <p class="text-lg text-slate-500 dark:text-slate-400 font-medium max-w-lg">
+            {{ getCurrentDate() }} — Vue d'ensemble rapide.
+          </p>
         </div>
       </div>
+
+      <button
+        class="relative z-10 px-8 py-4 glass dark:bg-slate-800/60 rounded-2xl font-black text-slate-600 dark:text-slate-300 hover:bg-tangerine hover:text-white transition-all transform hover:scale-105 active:scale-95 border-white/40 group flex items-center gap-3 overflow-hidden"
+        (click)="back()"
+      >
+        <svg class="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Dashboard
+      </button>
+    </div>
+  </div>
+
+  <!-- Vue d'ensemble toutes classes -->
+  <div *ngIf="!loading() && !error() && classes().length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div 
+      *ngFor="let classe of classes()" 
+      class="group relative"
+      (click)="goToClasse(classe.id)"
+    >
+      <div class="absolute -inset-0.5 bg-gradient-to-r from-sea/50 to-matcha/50 rounded-[2.5rem] blur opacity-0 group-hover:opacity-100 transition duration-500"></div>
+      <div class="relative p-8 glass dark:bg-slate-800/40 rounded-[2.5rem] border-white/60 hover:border-white/80 transition-all cursor-pointer">
+        <!-- Badge Status -->
+        <div class="absolute top-6 right-6">
+           <span [class]="getPresenceStatus(classe) === 'complete' ? 'bg-matcha/10 text-matcha' : 
+                          getPresenceStatus(classe) === 'partial' ? 'bg-tangerine/10 text-tangerine' : 
+                          'bg-slate-100 text-slate-400'"
+                 class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-white/20">
+             {{ getPresenceStatusText(classe) }}
+           </span>
+        </div>
+
+        <div class="flex items-center gap-4 mb-6">
+           <div class="w-14 h-14 bg-slate-100 dark:bg-slate-700/50 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+             {{ getPresenceStatus(classe) === 'complete' ? '✅' : '📝' }}
+           </div>
+           <div>
+             <h3 class="text-xl font-black group-hover:text-sea transition-colors">{{ classe.nom }}</h3>
+             <p class="text-xs font-black text-slate-400 uppercase tracking-widest">{{ classe.niveau }}</p>
+           </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="space-y-6 pt-4 border-t border-slate-100 dark:border-slate-700/50">
+          <div class="flex justify-between items-end">
+            <div>
+              <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Enfants</div>
+              <div class="text-2xl font-black">{{ classe.nombre_enfants }}</div>
+            </div>
+            <div class="text-right">
+              <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Marqués</div>
+              <div class="text-2xl font-black text-sea">{{ classe.presences_prises || 0 }}</div>
+            </div>
+          </div>
+
+          <!-- Progress -->
+          <div class="space-y-3">
+            <div class="flex justify-between text-[10px] font-black uppercase tracking-widest">
+              <span>Progression</span>
+              <span class="text-sea">{{ getProgressPercentage(classe) }}%</span>
+            </div>
+            <div class="h-3 bg-slate-100 dark:bg-slate-700/50 rounded-full overflow-hidden p-0.5">
+              <div class="h-full rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(102,152,204,0.3)]"
+                   [class]="getProgressBarColor(classe)"
+                   [style.width.%]="getProgressPercentage(classe)">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Button -->
+        <button
+          class="w-full mt-8 bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white py-4 rounded-2xl font-black text-sm uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all group-hover:shadow-2xl"
+          (click)="goToClasse(classe.id); $event.stopPropagation()"
+        >
+          {{ getProgressPercentage(classe) === 100 ? 'Voir Détails' : 'Marquer Présences' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- État vide -->
+  <div *ngIf="!loading() && !error() && classes().length === 0" class="text-center py-20 card-fancy border-dashed border-2 border-white/20">
+    <div class="text-6xl mb-6">📭</div>
+    <h3 class="text-2xl font-black mb-2">Aucune classe assignée</h3>
+    <p class="text-slate-500 font-medium">Vous n'avez pas encore de classes sous votre responsabilité.</p>
+  </div>
+
+  <!-- État de chargement -->
+  <div *ngIf="loading()" class="flex flex-col justify-center items-center py-20 space-y-4">
+    <div class="animate-spin rounded-full h-16 w-16 border-4 border-t-tangerine border-slate-200"></div>
+    <span class="text-slate-500 font-black text-xs uppercase tracking-widest animate-pulse">Synchronisation...</span>
+  </div>
+
+  <!-- État d'erreur -->
+  <div *ngIf="error()" class="p-8 glass bg-blush/5 border-blush/20 rounded-[2.5rem] flex items-center gap-6">
+    <div class="w-16 h-16 bg-blush/10 rounded-2xl flex items-center justify-center text-3xl">⚠️</div>
+    <div>
+      <h4 class="font-black text-blush uppercase tracking-wider text-xs mb-1">Une erreur est survenue</h4>
+      <p class="text-blush font-bold">{{ error() }}</p>
     </div>
   </div>
 </div>
@@ -183,9 +153,9 @@ export class PresencesJourComponent implements OnInit {
     this.presenceService.getClassesEducateur().subscribe({
       next: (response) => {
         const classes = response.data || [];
-        
+
         // Pour chaque classe, charger les présences du jour
-        const promises = classes.map((classe: any) => 
+        const promises = classes.map((classe: any) =>
           this.presenceService.getEnfantsClasse(classe.id, this.getTodayDate()).toPromise()
             .then((presenceResponse: any) => {
               const data = presenceResponse.data;

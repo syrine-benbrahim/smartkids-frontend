@@ -1,4 +1,3 @@
-// src/app/pages/parent/enfants/parent-enfant-fiche.component.ts
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -9,639 +8,371 @@ import { EnfantFicheService, FicheEnfant } from '../../../services/enfant-fiche.
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <div class="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 pb-20">
+    <div class="p-4 sm:p-8 space-y-12 animate-fade-in text-slate-800 dark:text-slate-100">
       
-      <!-- Loading State -->
-      <div *ngIf="loading()" class="flex items-center justify-center min-h-screen">
-        <div class="text-center">
-          <div class="relative w-24 h-24 mx-auto mb-6">
-            <div class="absolute inset-0 border-4 border-purple-200 rounded-full"></div>
-            <div class="absolute inset-0 border-4 border-purple-600 rounded-full border-t-transparent animate-spin"></div>
+      <!-- Premium Header & Navigation -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-8">
+        <div class="flex items-center gap-6">
+          <button (click)="goBack()" 
+                  class="w-12 h-12 glass dark:bg-slate-800 rounded-2xl flex items-center justify-center text-slate-400 hover:text-sea hover:scale-110 transition-all border-white/40 border">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+          </button>
+          <div>
+            <h1 class="text-3xl sm:text-4xl font-black tracking-tight mb-2">Profil Élève</h1>
+            <div class="flex items-center gap-3">
+              <div class="w-1.5 h-1.5 bg-sea rounded-full animate-pulse"></div>
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]" *ngIf="fiche()">
+                Dossier académique : {{ fiche()!.prenom }} {{ fiche()!.nom }}
+              </p>
+            </div>
           </div>
-          <p class="text-gray-600 font-medium text-lg">Chargement de la fiche...</p>
         </div>
+
+        <div class="flex items-center gap-4">
+           <button (click)="router.navigate(['/parent/enfants', enfantId(), 'presences'])"
+                   class="px-6 py-4 glass dark:bg-slate-800/60 rounded-2xl font-black text-[10px] uppercase tracking-widest text-sea hover:bg-white transition-all border-white/40 border flex items-center gap-3">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+              </svg>
+              Présences
+           </button>
+           <button (click)="router.navigate(['/parent/emploi'])"
+                   class="px-6 py-4 glass dark:bg-slate-800/60 rounded-2xl font-black text-[10px] uppercase tracking-widest text-tangerine hover:bg-white transition-all border-white/40 border flex items-center gap-3">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              </svg>
+              Emploi
+           </button>
+        </div>
+      </div>
+
+      <!-- Loading Tracker -->
+      <div *ngIf="loading()" class="flex flex-col justify-center items-center py-24 animate-pulse">
+        <div class="w-16 h-16 border-4 border-t-sea border-slate-200 rounded-full animate-spin mb-4"></div>
+        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ouverture du dossier sécurisé...</span>
       </div>
 
       <!-- Error State -->
-      <div *ngIf="error()" class="max-w-7xl mx-auto p-6">
-        <div class="bg-white rounded-3xl shadow-xl p-8 border-2 border-red-200">
-          <div class="flex items-start gap-6">
-            <div class="w-16 h-16 bg-gradient-to-br from-red-500 to-pink-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
-              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-            </div>
-            <div class="flex-1">
-              <h3 class="text-2xl font-bold text-red-900 mb-2">Erreur de chargement</h3>
-              <p class="text-red-700 mb-4">{{ error() }}</p>
-              <button 
-                (click)="loadFiche()"
-                class="px-6 py-3 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-xl font-bold hover:shadow-lg transition-all hover:scale-105">
-                🔄 Réessayer
-              </button>
-            </div>
-          </div>
-        </div>
+      <div *ngIf="error()" class="p-10 card-fancy border-blush/20 text-center space-y-6">
+        <div class="text-5xl">⚠️</div>
+        <h3 class="text-2xl font-black uppercase tracking-tight text-blush">Erreur de Dossier</h3>
+        <p class="text-slate-500 font-medium">{{ error() }}</p>
+        <button (click)="loadFiche()" class="px-8 py-4 bg-blush text-white rounded-2xl font-black text-[10px] uppercase tracking-widest">Réessayer</button>
       </div>
 
-      <!-- Main Content -->
-      <div *ngIf="!loading() && !error() && fiche()" class="max-w-7xl mx-auto p-4 lg:p-8 space-y-6">
+      <!-- Main Fiche Content -->
+      <div *ngIf="!loading() && !error() && fiche()" class="space-y-12">
         
-        <!-- Header avec Navigation -->
-        <div class="bg-white rounded-3xl shadow-xl p-6 border-2 border-purple-100">
-          <div class="flex items-center justify-between flex-wrap gap-4">
-            <button 
-              (click)="goBack()"
-              class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl font-bold text-gray-700 transition">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-              </svg>
-              Retour
-            </button>
-            
-            <div class="flex items-center gap-3">
-              <button 
-                (click)="router.navigate(['/parent/enfants', enfantId(), 'presences'])"
-                class="px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl font-bold hover:shadow-lg transition flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                </svg>
-                Présences
-              </button>
-              
-              <button 
-                class="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-bold hover:shadow-lg transition flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
-                Emploi
-              </button>
-            </div>
-          </div>
-        </div>
+        <!-- Section 1: Hero Identity -->
+        <div class="relative group">
+          <div class="absolute -inset-1 bg-gradient-to-r from-sea via-tangerine to-sea rounded-[3rem] blur opacity-10 group-hover:opacity-20 transition duration-1000"></div>
+          <div class="relative card-fancy p-10 overflow-hidden flex flex-col lg:flex-row items-center gap-10">
+            <!-- Background Halo -->
+            <div class="absolute top-0 right-0 w-96 h-96 bg-sea/5 rounded-full blur-3xl -mr-48 -mt-48 group-hover:bg-sea/10 transition-colors"></div>
 
-        <!-- Section 1: Informations Principales avec Photo -->
-        <div class="bg-white rounded-3xl shadow-xl overflow-hidden border-2 border-purple-100">
-          <div class="relative h-48 bg-gradient-to-r" [class]="getGradientClass(fiche()!.sexe)">
-            <div class="absolute inset-0 opacity-20">
-              <div class="absolute top-10 left-10 w-32 h-32 bg-white rounded-full blur-3xl animate-pulse"></div>
-              <div class="absolute bottom-10 right-10 w-40 h-40 bg-yellow-300 rounded-full blur-3xl animate-pulse"></div>
-            </div>
-          </div>
-
-          <div class="relative px-8 pb-8 -mt-20">
-            <div class="flex flex-col md:flex-row items-start md:items-end gap-6">
-              <!-- Avatar/Photo -->
-              <div class="relative group">
-                <div class="w-40 h-40 rounded-3xl bg-white shadow-2xl overflow-hidden border-4 border-white">
-                  <img 
-                    *ngIf="fiche()!.photo" 
-                    [src]="fiche()!.photo" 
-                    [alt]="fiche()!.nom_complet"
-                    class="w-full h-full object-cover">
-                  <div 
-                    *ngIf="!fiche()!.photo"
-                    [class]="getAvatarClass(fiche()!.sexe)"
-                    class="w-full h-full flex items-center justify-center">
-                    <span class="text-5xl font-black text-white">
-                      {{ getInitials(fiche()!.nom_complet) }}
-                    </span>
-                  </div>
+            <!-- Avatar Logic -->
+            <div class="relative flex-shrink-0 group/avatar">
+              <div class="w-48 h-48 rounded-[2.5rem] bg-white dark:bg-slate-700 p-1.5 shadow-2xl relative z-10 overflow-hidden">
+                <img *ngIf="fiche()!.photo" [src]="fiche()!.photo" class="w-full h-full object-cover rounded-[2rem]">
+                <div *ngIf="!fiche()!.photo" [class]="getAvatarClass(fiche()!.sexe)" class="w-full h-full rounded-[2rem] flex items-center justify-center text-5xl font-black text-white">
+                  {{ getInitials(fiche()!.nom_complet) }}
                 </div>
-                
-                <!-- Upload Photo Button -->
-                <label class="absolute bottom-2 right-2 w-12 h-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl flex items-center justify-center cursor-pointer hover:scale-110 transition shadow-lg">
-                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-                  </svg>
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    (change)="onPhotoSelect($event)" 
-                    class="hidden">
-                </label>
               </div>
+              <label class="absolute bottom-[-10px] right-[-10px] w-14 h-14 bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white rounded-2xl flex items-center justify-center cursor-pointer shadow-xl hover:scale-110 transition-all z-20 group-hover/avatar:bg-sea">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                <input type="file" (change)="onPhotoSelect($event)" class="hidden">
+              </label>
+            </div>
 
-              <!-- Infos Principales -->
-              <div class="flex-1 mt-6 md:mt-0">
-                <h1 class="text-4xl font-black text-gray-900 mb-2">
+            <!-- Core Identity -->
+            <div class="flex-1 space-y-6 text-center lg:text-left relative z-10">
+              <div class="space-y-2">
+                <h2 class="text-4xl lg:text-6xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
                   {{ fiche()!.nom_complet }}
-                </h1>
-                
-                <div class="flex flex-wrap items-center gap-3 mb-4">
-                  <span class="px-4 py-2 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 rounded-xl font-bold">
-                    {{ fiche()!.age }} ans
+                </h2>
+                <div class="flex flex-wrap justify-center lg:justify-start items-center gap-4">
+                  <span class="px-5 py-2 bg-sea/10 text-sea rounded-xl text-xs font-black uppercase tracking-widest border border-sea/20">
+                    {{ fiche()!.age }} Ans
                   </span>
-                  
-                  <span class="px-4 py-2 bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 rounded-xl font-bold">
-                    {{ fiche()!.sexe === 'M' || fiche()!.sexe === 'garçon' ? '👦 Garçon' : '👧 Fille' }}
+                  <span class="px-5 py-2 bg-tangerine/10 text-tangerine rounded-xl text-xs font-black uppercase tracking-widest border border-tangerine/20">
+                    {{ fiche()!.sexe === 'M' || fiche()!.sexe === 'garçon' ? 'Garçon' : 'Fille' }}
                   </span>
-                  
-                  <span class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl font-bold">
+                  <span class="px-5 py-2 bg-slate-100 dark:bg-slate-700/50 text-slate-500 rounded-xl text-xs font-black uppercase tracking-widest border border-slate-200 dark:border-slate-600">
                     📅 {{ formatDate(fiche()!.date_naissance) }}
                   </span>
                 </div>
+              </div>
 
-                <!-- Classe Info -->
-                <div *ngIf="fiche()!.classe" class="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-2xl shadow-lg">
-                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                  </svg>
-                  <div>
-                    <div class="text-sm font-medium opacity-90">Classe</div>
-                    <div class="text-lg font-black">{{ fiche()!.classe?.nom }} - {{ fiche()!.classe?.niveau }}</div>
-                  </div>
+              <!-- Academy Badge -->
+              <div *ngIf="fiche()!.classe" class="inline-flex items-center gap-6 p-6 glass dark:bg-slate-800/80 rounded-[2rem] border-white/40 shadow-xl group/badge hover:bg-white transition-all">
+                <div class="w-14 h-14 bg-gradient-to-br from-sea to-blue-600 rounded-2xl flex items-center justify-center text-2xl shadow-lg transform group-hover/badge:scale-110 transition-transform">🎓</div>
+                <div class="text-left">
+                  <p class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Classe Actuelle</p>
+                  <p class="text-lg font-black text-slate-900 dark:text-white">{{ fiche()!.classe?.nom }} <span class="text-sea ml-2 text-sm">• {{ fiche()!.classe?.niveau }}</span></p>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Section 2: Statistiques Rapides -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <!-- Taux de Présence -->
-          <div class="bg-white rounded-2xl p-6 shadow-lg border-2 border-green-100 hover:shadow-xl transition">
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
+        <!-- Section 2: KPIs Dashboard -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <!-- Presence Level -->
+          <div class="group relative card-fancy p-8 hover:translate-y-[-5px] transition-all border-white/40 overflow-hidden">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-matcha/5 rounded-full blur-2xl group-hover:bg-matcha/10 transition-colors"></div>
+            <div class="flex flex-col h-full justify-between gap-6">
+              <div class="flex justify-between items-start">
+                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Assiduité Globale</p>
+                 <span [class]="getTauxClass(fiche()!.statistiques_presence.taux_presence)" class="text-2xl font-black leading-none">{{ fiche()!.statistiques_presence.taux_presence }}%</span>
               </div>
-              <span class="text-3xl font-black" [class]="getTauxClass(fiche()!.statistiques_presence.taux_presence)">
-                {{ fiche()!.statistiques_presence.taux_presence }}%
-              </span>
-            </div>
-            <h3 class="text-sm font-bold text-gray-600 mb-2">Taux de Présence</h3>
-            <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-              <div 
-                [class]="getProgressClass(fiche()!.statistiques_presence.taux_presence)"
-                [style.width.%]="fiche()!.statistiques_presence.taux_presence"
-                class="h-full transition-all duration-500">
+              <div class="h-2.5 bg-slate-100 dark:bg-slate-700/50 rounded-full overflow-hidden">
+                <div [class]="getProgressClass(fiche()!.statistiques_presence.taux_presence)"
+                     [style.width.%]="fiche()!.statistiques_presence.taux_presence"
+                     class="h-full rounded-full transition-all duration-1000 shadow-[0_0_10px_rgba(var(--color-matcha),0.3)]"></div>
               </div>
             </div>
           </div>
 
-          <!-- Activités -->
-          <div class="bg-white rounded-2xl p-6 shadow-lg border-2 border-orange-100 hover:shadow-xl transition">
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-14 h-14 bg-gradient-to-br from-orange-500 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"/>
-                </svg>
+          <!-- Academic Performance -->
+          <div class="group relative card-fancy p-8 hover:translate-y-[-5px] transition-all border-white/40 overflow-hidden">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-sea/5 rounded-full blur-2xl group-hover:bg-sea/10 transition-colors"></div>
+            <div class="flex flex-col h-full justify-between gap-6">
+              <div class="flex justify-between items-start">
+                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Performance Moyenne</p>
+                 <span [class]="getMoyenneClass(fiche()!.moyennes.moyenne_generale)" class="text-2xl font-black leading-none">{{ fiche()!.moyennes.moyenne_generale || 'N/A' }}</span>
               </div>
-              <span class="text-3xl font-black text-orange-600">
-                {{ fiche()!.statistiques_activites.total_activites }}
-              </span>
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-relaxed">Sur {{ fiche()!.moyennes.annee_scolaire }}</p>
             </div>
-            <h3 class="text-sm font-bold text-gray-600 mb-2">Activités Totales</h3>
-            <p class="text-xs text-gray-500">
-              {{ fiche()!.statistiques_activites.taux_participation }}% de participation
-            </p>
           </div>
 
-          <!-- Moyenne Générale -->
-          <div class="bg-white rounded-2xl p-6 shadow-lg border-2 border-blue-100 hover:shadow-xl transition">
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                </svg>
+          <!-- Activities Stats -->
+          <div class="group relative card-fancy p-8 hover:translate-y-[-5px] transition-all border-white/40 overflow-hidden">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-tangerine/5 rounded-full blur-2xl group-hover:bg-tangerine/10 transition-colors"></div>
+            <div class="flex flex-col h-full justify-between gap-6">
+              <div class="flex justify-between items-start">
+                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Engagement Activités</p>
+                 <span class="text-2xl font-black text-tangerine leading-none">{{ fiche()!.statistiques_activites.total_activites }}</span>
               </div>
-              <span class="text-3xl font-black" [class]="getMoyenneClass(fiche()!.moyennes.moyenne_generale)">
-                {{ fiche()!.moyennes.moyenne_generale || 'N/A' }}
-              </span>
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-relaxed">{{ fiche()!.statistiques_activites.taux_participation }}% Participation</p>
             </div>
-            <h3 class="text-sm font-bold text-gray-600 mb-2">Moyenne Générale</h3>
-            <p class="text-xs text-gray-500">
-              Année {{ fiche()!.moyennes.annee_scolaire }}
-            </p>
           </div>
 
-          <!-- Présences ce Mois -->
-          <div class="bg-white rounded-2xl p-6 shadow-lg border-2 border-purple-100 hover:shadow-xl transition">
-            <div class="flex items-center justify-between mb-4">
-              <div class="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg">
-                <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                </svg>
+          <!-- Monthly Snapshot -->
+          <div class="group relative card-fancy p-8 hover:translate-y-[-5px] transition-all border-white/40 overflow-hidden">
+            <div class="absolute -right-4 -top-4 w-24 h-24 bg-blush/5 rounded-full blur-2xl group-hover:bg-blush/10 transition-colors"></div>
+            <div class="flex flex-col h-full justify-between gap-6">
+              <div class="flex justify-between items-start">
+                 <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Focus : Mois Actuel</p>
+                 <span class="text-2xl font-black text-blush leading-none">{{ fiche()!.statistiques_presence.mois_en_cours.presents }}/{{ fiche()!.statistiques_presence.mois_en_cours.total }}</span>
               </div>
-              <span class="text-3xl font-black text-purple-600">
-                {{ fiche()!.statistiques_presence.mois_en_cours.presents }}/{{ fiche()!.statistiques_presence.mois_en_cours.total }}
-              </span>
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-relaxed">{{ fiche()!.statistiques_presence.mois_en_cours.taux }}% Présence</p>
             </div>
-            <h3 class="text-sm font-bold text-gray-600 mb-2">Ce Mois-ci</h3>
-            <p class="text-xs text-gray-500">
-              {{ fiche()!.statistiques_presence.mois_en_cours.taux }}% de présence
-            </p>
           </div>
         </div>
 
-        <!-- Section 3: Classe et Éducateurs -->
-        <div *ngIf="fiche()!.classe" class="bg-white rounded-3xl shadow-xl p-8 border-2 border-indigo-100">
-          <div class="flex items-center gap-3 mb-6">
-            <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-              </svg>
-            </div>
-            <h2 class="text-2xl font-black text-gray-900">Classe & Éducateurs</h2>
-          </div>
-
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Infos Classe -->
-            <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-6">
-              <h3 class="text-lg font-bold text-gray-900 mb-4">Informations de la classe</h3>
-              
-              <div class="space-y-3">
-                <div class="flex items-start gap-3">
-                  <svg class="w-5 h-5 text-indigo-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
-                  </svg>
-                  <div>
-                    <p class="text-sm text-gray-600">Nom de la classe</p>
-                    <p class="font-bold text-gray-900">{{ fiche()!.classe?.nom }}</p>
-                  </div>
-                </div>
-
-                <div class="flex items-start gap-3">
-                  <svg class="w-5 h-5 text-indigo-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
-                  </svg>
-                  <div>
-                    <p class="text-sm text-gray-600">Niveau</p>
-                    <p class="font-bold text-gray-900">{{ fiche()!.classe?.niveau }}</p>
-                  </div>
-                </div>
-
-                <div class="flex items-start gap-3">
-                  <svg class="w-5 h-5 text-indigo-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                  </svg>
-                  <div>
-                    <p class="text-sm text-gray-600">Capacité</p>
-                    <p class="font-bold text-gray-900">{{ fiche()!.classe?.capacite_max }} élèves</p>
-                  </div>
-                </div>
-
-                <div *ngIf="fiche()!.classe?.salle" class="flex items-start gap-3">
-                  <svg class="w-5 h-5 text-indigo-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                  </svg>
-                  <div>
-                    <p class="text-sm text-gray-600">Salle</p>
-                    <p class="font-bold text-gray-900">{{ fiche()!.classe!.salle!.nom }} ({{ fiche()!.classe!.salle!.code }})</p>
-                  </div>
-                </div>
+        <!-- Section 3: Dual Column - Presence vs Activities -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+           <!-- Presence List -->
+           <div class="space-y-8">
+              <div class="flex items-center gap-4">
+                <div class="w-1.5 h-6 bg-matcha rounded-full"></div>
+                <h2 class="text-xl font-black uppercase tracking-widest">Historique Présences</h2>
               </div>
-            </div>
-
-            <!-- Éducateurs -->
-            <div>
-              <h3 class="text-lg font-bold text-gray-900 mb-4">Éducateurs de la classe</h3>
-              
-              <div class="space-y-3">
-                <div 
-                  *ngFor="let educateur of fiche()!.classe?.educateurs || []"
-                  class="bg-white rounded-2xl p-4 shadow-md border-2 border-gray-100 hover:border-indigo-200 transition">
-                  
-                  <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <span class="text-lg font-bold text-white">
-                        {{ getInitials(educateur.nom_complet) }}
-                      </span>
+              <div class="space-y-4">
+                 <div *ngFor="let presence of fiche()!.presences_recentes" 
+                      class="group card-fancy p-6 border-white/40 flex items-center justify-between hover:translate-x-2 transition-all">
+                    <div class="flex items-center gap-5">
+                       <div [class]="presence.statut === 'present' ? 'bg-matcha/20 text-matcha' : 'bg-blush/20 text-blush'" 
+                            class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-inner">
+                         {{ presence.statut === 'present' ? '✅' : '❌' }}
+                       </div>
+                       <div>
+                          <p class="font-black text-slate-900 dark:text-white">{{ formatDate(presence.date) }}</p>
+                          <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">{{ presence.educateur }}</p>
+                       </div>
                     </div>
-                    
-                    <div class="flex-1 min-w-0">
-                      <h4 class="font-bold text-gray-900 truncate">{{ educateur.nom_complet }}</h4>
-                      
-                      <div class="flex items-center gap-4 mt-1 text-sm text-gray-600">
-                        <div *ngIf="educateur.email" class="flex items-center gap-1">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                          </svg>
-                          <span class="truncate">{{ educateur.email }}</span>
-                        </div>
-                        
-                        <div *ngIf="educateur.telephone" class="flex items-center gap-1">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                          </svg>
-                          <span>{{ educateur.telephone }}</span>
-                        </div>
-                      </div>
+                    <span [class]="presence.statut === 'present' ? 'bg-matcha/10 text-matcha border-matcha/20' : 'bg-blush/10 text-blush border-blush/20'"
+                          class="px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border">
+                       {{ presence.statut === 'present' ? 'Confirmé' : 'Absent' }}
+                    </span>
+                 </div>
+                 <div *ngIf="fiche()!.presences_recentes.length === 0" class="p-12 text-center card-fancy border-dashed border-2 opacity-40">
+                    <p class="font-black text-xs text-slate-400 uppercase tracking-widest">Aucune donnée temporelle</p>
+                 </div>
+              </div>
+           </div>
+
+           <!-- Activities Snapshot -->
+           <div class="space-y-8">
+              <div class="flex items-center gap-4">
+                <div class="w-1.5 h-6 bg-tangerine rounded-full"></div>
+                <h2 class="text-xl font-black uppercase tracking-widest">Parcours Extra-Scolaire</h2>
+              </div>
+              <div class="space-y-4">
+                 <div *ngFor="let activite of fiche()!.activites_recentes" 
+                      class="group card-fancy p-6 border-white/40 hover:translate-x-2 transition-all bg-gradient-to-r from-white to-orange-50/10 dark:from-slate-800/40 dark:to-slate-700/20">
+                    <div class="flex justify-between items-start mb-4">
+                       <div>
+                          <h4 class="font-black text-lg text-slate-900 dark:text-white group-hover:text-tangerine transition-colors">{{ activite.titre }}</h4>
+                          <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1 line-clamp-1 truncate max-w-[200px]">📅 {{ formatDate(activite.date_activite) }}</p>
+                       </div>
+                       <span class="px-3 py-1 bg-tangerine/10 text-tangerine rounded-lg text-[9px] font-black uppercase tracking-widest border border-tangerine/20">{{ activite.type }}</span>
                     </div>
-                  </div>
-                </div>
+                    <div class="flex justify-end">
+                       <span [class]="activite.statut === 'present' ? 'text-matcha' : 'text-slate-400'" class="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                         <div [class]="activite.statut === 'present' ? 'bg-matcha' : 'bg-slate-300'" class="w-1.5 h-1.5 rounded-full"></div>
+                         {{ activite.statut === 'present' ? 'Participation Validée' : (activite.statut || 'Planifiée') }}
+                       </span>
+                    </div>
+                 </div>
+                 <div *ngIf="fiche()!.activites_recentes.length === 0" class="p-12 text-center card-fancy border-dashed border-2 opacity-40">
+                    <p class="font-black text-xs text-slate-400 uppercase tracking-widest">Calendrier créatif vide</p>
+                 </div>
               </div>
-            </div>
-          </div>
+           </div>
         </div>
 
-        <!-- Section 4: Grid avec Présences Récentes, Activités, Notes -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          
-          <!-- Présences Récentes -->
-          <div class="bg-white rounded-3xl shadow-xl p-6 border-2 border-green-100">
-            <div class="flex items-center justify-between mb-6">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                  </svg>
-                </div>
-                <h2 class="text-xl font-black text-gray-900">Présences Récentes</h2>
+        <!-- Section 4: Grades Grid -->
+        <div class="space-y-8">
+           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+              <div class="flex items-center gap-4">
+                <div class="w-1.5 h-6 bg-sea rounded-full"></div>
+                <h2 class="text-xl font-black uppercase tracking-widest">Cahier de Notes</h2>
               </div>
-              
-              <button 
-                (click)="router.navigate(['/parent/enfants', enfantId(), 'presences'])"
-                class="text-sm font-bold text-green-600 hover:text-green-700 flex items-center gap-1">
-                Voir tout
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                </svg>
-              </button>
-            </div>
+              <div class="flex bg-slate-100 dark:bg-slate-800/60 p-1.5 rounded-2xl">
+                 <div *ngFor="let t of [1,2,3]; let i = index" class="px-6 py-2 text-[10px] font-black uppercase tracking-widest">
+                    <span class="text-slate-400 mr-2">T{{t}}:</span>
+                    <span [class]="getMoyenneClass(getTrimestreMoyenne(t))">{{ getTrimestreMoyenne(t) || '-' }}</span>
+                 </div>
+              </div>
+           </div>
 
-            <div class="space-y-3">
-              <div 
-                *ngFor="let presence of fiche()!.presences_recentes"
-                class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl hover:bg-gray-100 transition">
-                
-                <div class="flex items-center gap-3 flex-1">
-                  <div class="w-10 h-10 rounded-xl flex items-center justify-center"
-                       [class]="presence.statut === 'present' ? 'bg-green-100' : 'bg-red-100'">
-                    <span class="text-xl">{{ presence.statut === 'present' ? '✅' : '❌' }}</span>
-                  </div>
-                  
-                  <div class="flex-1 min-w-0">
-                    <p class="font-bold text-gray-900">{{ formatDate(presence.date) }}</p>
-                    <p class="text-sm text-gray-600 truncate">{{ presence.educateur }}</p>
-                  </div>
-                </div>
-                
-                <span 
-                  class="px-3 py-1 rounded-lg text-xs font-bold"
-                  [class]="presence.statut === 'present' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
-                  {{ presence.statut === 'present' ? 'Présent' : 'Absent' }}
-                </span>
+           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div *ngFor="let note of fiche()!.notes_recentes" class="group relative card-fancy p-8 hover:translate-y-[-4px] transition-all border-white/40">
+                 <div class="flex justify-between items-start mb-6">
+                    <div class="p-4 bg-slate-50 dark:bg-slate-700 rounded-2xl group-hover:bg-sea/10 transition-colors">
+                       <span class="text-2xl">📝</span>
+                    </div>
+                    <div class="text-right">
+                       <p [class]="getMoyenneClass(note.note)" class="text-4xl font-black leading-none">{{ note.note }}</p>
+                       <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest opacity-50">/ 20</p>
+                    </div>
+                 </div>
+                 <div class="space-y-4">
+                    <div>
+                       <h3 class="text-xl font-black text-slate-900 dark:text-white leading-tight group-hover:text-sea transition-all">{{ note.matiere }}</h3>
+                       <div class="flex items-center gap-3 mt-1">
+                          <span class="text-[9px] font-black text-sea uppercase tracking-widest">{{ note.type_evaluation }}</span>
+                          <span class="text-slate-300">•</span>
+                          <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Trimestre {{ note.trimestre }}</span>
+                       </div>
+                    </div>
+                    <div class="pt-4 border-t border-slate-100 dark:border-slate-700 space-y-3">
+                       <div class="flex items-center gap-3 text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                          <span>👨‍🏫 {{ note.educateur }}</span>
+                          <span>•</span>
+                          <span>📅 {{ formatDate(note.date_evaluation) }}</span>
+                       </div>
+                       <p *ngIf="note.commentaire" class="text-xs font-medium italic text-slate-500 line-clamp-2">"{{ note.commentaire }}"</p>
+                    </div>
+                 </div>
               </div>
-
-              <div *ngIf="fiche()!.presences_recentes.length === 0" 
-                   class="text-center py-8 text-gray-500">
-                <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                </svg>
-                <p class="font-medium">Aucune présence enregistrée</p>
+              <div *ngIf="fiche()!.notes_recentes.length === 0" class="col-span-full p-20 text-center card-fancy border-dashed border-2 opacity-40">
+                 <h3 class="font-black text-xs uppercase tracking-[0.3em]">En attente d'évaluations</h3>
               </div>
-            </div>
-          </div>
-
-          <!-- Activités Récentes -->
-          <div class="bg-white rounded-3xl shadow-xl p-6 border-2 border-orange-100">
-            <div class="flex items-center justify-between mb-6">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl flex items-center justify-center">
-                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"/>
-                  </svg>
-                </div>
-                <h2 class="text-xl font-black text-gray-900">Activités Récentes</h2>
-              </div>
-              
-              <button 
-                (click)="router.navigate(['/parent/activites/enfant', enfantId(), 'historique'])"
-                class="text-sm font-bold text-orange-600 hover:text-orange-700 flex items-center gap-1">
-                Voir tout
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                </svg>
-              </button>
-            </div>
-
-            <div class="space-y-3">
-              <div 
-                *ngFor="let activite of fiche()!.activites_recentes"
-                class="p-4 bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl border border-orange-100">
-                
-                <div class="flex items-start justify-between mb-2">
-                  <h3 class="font-bold text-gray-900 flex-1">{{ activite.titre }}</h3>
-                  <span class="px-2 py-1 bg-orange-200 text-orange-800 rounded-lg text-xs font-bold">
-                    {{ activite.type }}
-                  </span>
-                </div>
-                
-                <div class="flex items-center justify-between">
-                  <p class="text-sm text-gray-600">{{ formatDate(activite.date_activite) }}</p>
-                  <span 
-                    *ngIf="activite.statut"
-                    class="px-2 py-1 rounded-lg text-xs font-bold"
-                    [class]="activite.statut === 'present' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'">
-                    {{ activite.statut === 'present' ? '✅ Présent' : activite.statut }}
-                  </span>
-                </div>
-              </div>
-
-              <div *ngIf="fiche()!.activites_recentes.length === 0" 
-                   class="text-center py-8 text-gray-500">
-                <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"/>
-                </svg>
-                <p class="font-medium">Aucune activité enregistrée</p>
-              </div>
-            </div>
-          </div>
+           </div>
         </div>
 
-        <!-- Section 5: Notes et Moyennes -->
-        <div class="bg-white rounded-3xl shadow-xl p-8 border-2 border-blue-100">
-          <div class="flex items-center gap-3 mb-6">
-            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-              </svg>
-            </div>
-            <h2 class="text-2xl font-black text-gray-900">Notes et Bulletin</h2>
-          </div>
-
-          <!-- Moyennes par Trimestre -->
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-4">
-              <p class="text-sm font-bold text-gray-600 mb-2">Trimestre 1</p>
-              <p class="text-3xl font-black" [class]="getMoyenneClass(fiche()!.moyennes.trimestre_1)">
-                {{ fiche()!.moyennes.trimestre_1 || 'N/A' }}
-              </p>
-            </div>
-
-            <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-4">
-              <p class="text-sm font-bold text-gray-600 mb-2">Trimestre 2</p>
-              <p class="text-3xl font-black" [class]="getMoyenneClass(fiche()!.moyennes.trimestre_2)">
-                {{ fiche()!.moyennes.trimestre_2 || 'N/A' }}
-              </p>
-            </div>
-
-            <div class="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-4">
-              <p class="text-sm font-bold text-gray-600 mb-2">Trimestre 3</p>
-              <p class="text-3xl font-black" [class]="getMoyenneClass(fiche()!.moyennes.trimestre_3)">
-                {{ fiche()!.moyennes.trimestre_3 || 'N/A' }}
-              </p>
-            </div>
-
-            <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-4">
-              <p class="text-sm font-bold text-gray-600 mb-2">Moyenne Générale</p>
-              <p class="text-3xl font-black" [class]="getMoyenneClass(fiche()!.moyennes.moyenne_generale)">
-                {{ fiche()!.moyennes.moyenne_generale || 'N/A' }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Notes Récentes -->
-          <div>
-            <h3 class="text-lg font-bold text-gray-900 mb-4">Notes récentes</h3>
-            
-            <div class="space-y-3">
-              <div 
-                *ngFor="let note of fiche()!.notes_recentes"
-                class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl hover:bg-gray-100 transition">
-                
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-3 mb-1">
-                    <h4 class="font-bold text-gray-900">{{ note.matiere }}</h4>
-                    <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold">
-                      {{ note.type_evaluation }}
-                    </span>
-                  </div>
-                  
-                  <div class="flex items-center gap-4 text-sm text-gray-600">
-                    <span>📅 {{ formatDate(note.date_evaluation) }}</span>
-                    <span>👨‍🏫 {{ note.educateur }}</span>
-                    <span *ngIf="note.trimestre" class="px-2 py-0.5 bg-gray-200 rounded text-xs font-bold">
-                      T{{ note.trimestre }}
-                    </span>
-                  </div>
-                  
-                  <p *ngIf="note.commentaire" class="text-sm text-gray-600 mt-2 italic">
-                    "{{ note.commentaire }}"
-                  </p>
-                </div>
-                
-                <div class="ml-4 text-right flex-shrink-0">
-                  <p class="text-4xl font-black" [class]="getMoyenneClass(note.note)">
-                    {{ note.note }}
-                  </p>
-                  <p class="text-xs text-gray-500">/20</p>
-                </div>
+        <!-- Section 5: Info Blocks (Medical & Educators) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+           <!-- Medical Status -->
+           <div class="lg:col-span-2 space-y-8">
+              <div class="flex items-center gap-4 text-blush">
+                <div class="w-1.5 h-6 bg-blush rounded-full"></div>
+                <h2 class="text-xl font-black uppercase tracking-widest">Informations Vitales</h2>
               </div>
-
-              <div *ngIf="fiche()!.notes_recentes.length === 0" 
-                   class="text-center py-8 text-gray-500">
-                <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-                <p class="font-medium">Aucune note enregistrée</p>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                 <div *ngIf="fiche()!.infos_medicales.allergies" class="card-fancy p-8 border-blush/20 bg-blush/5 group hover:bg-white transition-all">
+                    <h3 class="text-[10px] font-black text-blush uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                       <span class="animate-pulse">⚠️</span> Allergies Critiques
+                    </h3>
+                    <p class="text-slate-700 dark:text-slate-300 font-bold leading-relaxed">{{ fiche()!.infos_medicales.allergies }}</p>
+                 </div>
+                 <div *ngIf="fiche()!.infos_medicales.remarques_medicales" class="card-fancy p-8 border-tangerine/20 bg-tangerine/5 group hover:bg-white transition-all">
+                    <h3 class="text-[10px] font-black text-tangerine uppercase tracking-[0.2em] mb-4">🏥 Observations Médicales</h3>
+                    <p class="text-slate-700 dark:text-slate-300 font-bold leading-relaxed">{{ fiche()!.infos_medicales.remarques_medicales }}</p>
+                 </div>
+                 <div *ngIf="!fiche()!.infos_medicales.allergies && !fiche()!.infos_medicales.remarques_medicales" class="col-span-full p-12 card-fancy border-dashed border-2 opacity-40 text-center">
+                    <p class="font-black text-[9px] uppercase tracking-widest">Dossier médical sans alertes</p>
+                 </div>
               </div>
-            </div>
-          </div>
+           </div>
+
+           <!-- Academic Team -->
+           <div class="space-y-8">
+              <div class="flex items-center gap-4 text-slate-900 dark:text-white">
+                <div class="w-1.5 h-6 bg-slate-900 dark:bg-slate-100 rounded-full"></div>
+                <h2 class="text-xl font-black uppercase tracking-widest">Équipe Pédagogique</h2>
+              </div>
+              <div class="space-y-4">
+                 <div *ngFor="let educ of fiche()!.classe?.educateurs" class="card-fancy p-5 border-white/40 flex items-center gap-4 group/educ hover:bg-slate-900 hover:text-white transition-all">
+                    <div class="w-14 h-14 bg-slate-100 dark:bg-slate-700 rounded-2xl flex items-center justify-center text-lg font-black text-slate-500 group-hover/educ:bg-white/10 group-hover/educ:text-white transition-colors flex-shrink-0 shadow-inner">
+                       {{ getInitials(educ.nom_complet) }}
+                    </div>
+                    <div class="min-w-0">
+                       <h4 class="font-black truncate">{{ educ.nom_complet }}</h4>
+                       <p class="text-[8px] font-black uppercase tracking-widest opacity-50">Référent de classe</p>
+                       <div class="flex items-center gap-3 mt-2">
+                          <a *ngIf="educ.email" [href]="'mailto:' + educ.email" class="p-1.5 hover:bg-white/20 rounded-lg transition-colors"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg></a>
+                          <a *ngIf="educ.telephone" [href]="'tel:' + educ.telephone" class="p-1.5 hover:bg-white/20 rounded-lg transition-colors"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg></a>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+           </div>
         </div>
 
-        <!-- Section 6: Informations Médicales -->
-        <div *ngIf="fiche()!.infos_medicales.allergies || fiche()!.infos_medicales.remarques_medicales" 
-             class="bg-white rounded-3xl shadow-xl p-8 border-2 border-red-100">
-          <div class="flex items-center gap-3 mb-6">
-            <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-600 rounded-2xl flex items-center justify-center">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-              </svg>
-            </div>
-            <h2 class="text-2xl font-black text-gray-900">Informations Médicales</h2>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div *ngIf="fiche()!.infos_medicales.allergies" 
-                 class="bg-red-50 rounded-2xl p-6 border-2 border-red-200">
-              <div class="flex items-center gap-2 mb-3">
-                <span class="text-2xl">⚠️</span>
-                <h3 class="text-lg font-bold text-red-900">Allergies</h3>
+        <!-- Section 6: Parents List -->
+        <div class="space-y-8 pt-12 border-t dark:border-slate-700/50">
+           <div class="flex items-center gap-4">
+              <div class="w-1.5 h-6 bg-butter rounded-full"></div>
+              <h2 class="text-xl font-black uppercase tracking-widest">Cercle Familial & Tuteurs</h2>
+           </div>
+           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div *ngFor="let parent of fiche()!.parents" class="card-fancy p-8 border-white/60 bg-gradient-to-br from-white via-slate-50/50 to-slate-100/30 dark:from-slate-800/40 dark:to-slate-900/40 group hover:translate-y-[-5px] transition-all">
+                 <div class="flex items-center gap-6 mb-8">
+                    <div class="w-16 h-16 bg-white dark:bg-slate-700 rounded-3xl flex items-center justify-center text-2xl shadow-xl shadow-slate-200/50 dark:shadow-slate-900/50 group-hover:rotate-6 transition-transform">👤</div>
+                    <div class="min-w-0">
+                       <h3 class="text-xl font-black truncate text-slate-900 dark:text-white">{{ parent.nom_complet }}</h3>
+                       <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">{{ parent.profession || 'Dossier Parent' }}</p>
+                    </div>
+                 </div>
+                 <div class="space-y-3">
+                    <div class="flex items-center gap-4 p-4 bg-white/60 dark:bg-slate-700/60 rounded-2xl border border-white/40">
+                       <svg class="w-4 h-4 text-sea" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                       <span class="text-xs font-bold truncate">{{ parent.email }}</span>
+                    </div>
+                    <div class="flex items-center gap-4 p-4 bg-white/60 dark:bg-slate-700/60 rounded-2xl border border-white/40">
+                       <svg class="w-4 h-4 text-matcha" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                       <span class="text-xs font-bold">{{ parent.telephone }}</span>
+                    </div>
+                 </div>
               </div>
-              <p class="text-gray-700">{{ fiche()!.infos_medicales.allergies }}</p>
-            </div>
-
-            <div *ngIf="fiche()!.infos_medicales.remarques_medicales" 
-                 class="bg-orange-50 rounded-2xl p-6 border-2 border-orange-200">
-              <div class="flex items-center gap-2 mb-3">
-                <span class="text-2xl">🏥</span>
-                <h3 class="text-lg font-bold text-orange-900">Remarques Médicales</h3>
-              </div>
-              <p class="text-gray-700">{{ fiche()!.infos_medicales.remarques_medicales }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Section 7: Parents/Tuteurs -->
-        <div class="bg-white rounded-3xl shadow-xl p-8 border-2 border-purple-100">
-          <div class="flex items-center gap-3 mb-6">
-            <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-              </svg>
-            </div>
-            <h2 class="text-2xl font-black text-gray-900">Parents / Tuteurs</h2>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div 
-              *ngFor="let parent of fiche()!.parents"
-              class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border-2 border-purple-100">
-              
-              <div class="flex items-center gap-4 mb-4">
-                <div class="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center">
-                  <span class="text-xl font-bold text-white">
-                    {{ getInitials(parent.nom_complet) }}
-                  </span>
-                </div>
-                
-                <div class="flex-1 min-w-0">
-                  <h3 class="font-bold text-gray-900 text-lg">{{ parent.nom_complet }}</h3>
-                  <p *ngIf="parent.profession" class="text-sm text-gray-600">{{ parent.profession }}</p>
-                </div>
-              </div>
-
-              <div class="space-y-2">
-                <div *ngIf="parent.email" class="flex items-center gap-2 text-sm text-gray-700">
-                  <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                  </svg>
-                  <span class="truncate">{{ parent.email }}</span>
-                </div>
-
-                <div class="flex items-center gap-2 text-sm text-gray-700">
-                  <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                  </svg>
-                  <span>{{ parent.telephone }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+           </div>
         </div>
 
       </div>
     </div>
   `,
   styles: [`
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-
-    .space-y-6 > * {
-      animation: fadeIn 0.5s ease-out;
+    .animate-fade-in {
+      animation: fadeInUp 0.8s ease-out forwards;
     }
   `]
 })
@@ -667,7 +398,6 @@ export class ParentEnfantFicheComponent implements OnInit {
   loadFiche() {
     this.loading.set(true);
     this.error.set(null);
-
     this.ficheService.getFicheEnfant(this.enfantId()).subscribe({
       next: (response) => {
         if (response.success) {
@@ -676,9 +406,8 @@ export class ParentEnfantFicheComponent implements OnInit {
         this.loading.set(false);
       },
       error: (err) => {
-        this.error.set('Erreur lors du chargement de la fiche');
+        this.error.set('Erreur lors du chargement de la fiche académique.');
         this.loading.set(false);
-        console.error('Error loading fiche:', err);
       }
     });
   }
@@ -686,78 +415,37 @@ export class ParentEnfantFicheComponent implements OnInit {
   onPhotoSelect(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!input.files || input.files.length === 0) return;
-
     const file = input.files[0];
-    
-    // Validation
-    if (!file.type.startsWith('image/')) {
-      alert('Veuillez sélectionner une image');
-      return;
-    }
-
-    if (file.size > 2 * 1024 * 1024) {
-      alert('La taille de l\'image ne doit pas dépasser 2MB');
-      return;
-    }
+    if (!file.type.startsWith('image/')) return alert('Fichier invalide : Image requise.');
+    if (file.size > 2 * 1024 * 1024) return alert('Image trop volumineuse (max 2MB).');
 
     this.uploadingPhoto.set(true);
-
     this.ficheService.uploadPhoto(this.enfantId(), file).subscribe({
       next: (response) => {
         if (response.success && this.fiche()) {
-          // Mettre à jour la photo dans la fiche
-          const currentFiche = this.fiche()!;
-          this.fiche.set({
-            ...currentFiche,
-            photo: response.data.photo_url
-          });
+          this.fiche.set({ ...this.fiche()!, photo: response.data.photo_url });
         }
         this.uploadingPhoto.set(false);
       },
-      error: (err) => {
-        alert('Erreur lors de l\'upload de la photo');
-        this.uploadingPhoto.set(false);
-        console.error('Error uploading photo:', err);
-      }
+      error: () => this.uploadingPhoto.set(false)
     });
   }
 
-  goBack() {
-    this.router.navigate(['/parent/enfants']);
+  goBack() { this.router.navigate(['/parent/enfants']); }
+  getInitials(name: string): string { return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(); }
+  getAvatarClass(sexe: string): string { return (sexe === 'M' || sexe === 'garçon') ? 'bg-gradient-to-br from-sea to-blue-600' : 'bg-gradient-to-br from-blush to-purple-600'; }
+  getTauxClass(taux: number): string { return this.ficheService.getTauxPresenceClass(taux); }
+  getProgressClass(taux: number): string { return this.ficheService.getProgressBarClass(taux); }
+  getTrimestreMoyenne(t: number): number | null {
+    const f = this.fiche();
+    if (!f || !f.moyennes) return null;
+    const key = `trimestre_${t}` as keyof typeof f.moyennes;
+    return f.moyennes[key] as number | null;
   }
 
-  getInitials(name: string): string {
-    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  getMoyenneClass(moyenne: any): string {
+    if (!moyenne) return 'text-slate-300';
+    return this.ficheService.getMentionColor(Number(moyenne));
   }
-
-  getGradientClass(sexe: string): string {
-    if (sexe === 'M' || sexe === 'garçon') {
-      return 'from-blue-400 via-blue-500 to-indigo-600';
-    }
-    return 'from-pink-400 via-pink-500 to-purple-600';
-  }
-
-  getAvatarClass(sexe: string): string {
-    if (sexe === 'M' || sexe === 'garçon') {
-      return 'bg-gradient-to-br from-blue-500 to-indigo-600';
-    }
-    return 'bg-gradient-to-br from-pink-500 to-purple-600';
-  }
-
-  getTauxClass(taux: number): string {
-    return this.ficheService.getTauxPresenceClass(taux);
-  }
-
-  getProgressClass(taux: number): string {
-    return this.ficheService.getProgressBarClass(taux);
-  }
-
-  getMoyenneClass(moyenne: number | null): string {
-    if (!moyenne) return 'text-gray-400';
-    return this.ficheService.getMentionColor(moyenne);
-  }
-
-  formatDate(dateString: string): string {
-    return this.ficheService.formatDate(dateString);
-  }
+  formatDate(dateString: string): string { return this.ficheService.formatDate(dateString); }
 }

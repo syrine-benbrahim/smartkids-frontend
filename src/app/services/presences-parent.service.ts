@@ -86,7 +86,7 @@ export interface CalendrierResponse {
 export class ParentPresencesApiService {
   private apiUrl = `${environment.apiUrl}/parent`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   /**
    * Récupérer la liste des enfants avec leurs statistiques
@@ -104,10 +104,13 @@ export class ParentPresencesApiService {
     enfantId: number,
     dateDebut?: string,
     dateFin?: string,
-    perPage: number = 15
+    perPage: number = 15,
+    page: number = 1
   ): Observable<{ success: boolean; data: PresencesResponse; pagination: any }> {
-    let params = new HttpParams().set('per_page', perPage.toString());
-    
+    let params = new HttpParams()
+      .set('per_page', perPage.toString())
+      .set('page', page.toString());
+
     if (dateDebut) {
       params = params.set('date_debut', dateDebut);
     }

@@ -68,34 +68,58 @@ export class NotificationService {
     }
 
     private mapBackendNotification(n: any): AppNotification {
+        if (!n) {
+            return {
+                id: '0',
+                type: 'bell' as any,
+                title: 'Notification Invalide',
+                message: '',
+                is_read: true,
+                created_at: new Date().toISOString()
+            };
+        }
         return {
-            id: n.id,
-            type: n.type,
-            title: n.titre, // Map 'titre' to 'title'
-            message: n.message,
-            is_read: n.lu, // Map 'lu' to 'is_read'
-            created_at: n.created_at,
+            id: n.id || '0',
+            type: n.type || 'bell',
+            title: n.titre || n.title || 'Sans titre', // Map 'titre' to 'title'
+            message: n.message || '',
+            is_read: !!(n.lu || n.is_read), // Map 'lu' to 'is_read'
+            created_at: n.created_at || new Date().toISOString(),
             data: n.data
         };
     }
 
     fetchUnread() {
-        return this.http.get<{ data: { data: any[] } }>(`${environment.apiUrl}/notifications/non-lues`).pipe(
+        return this.http.get<any>(`${environment.apiUrl}/notifications/non-lues`).pipe(
             tap(res => {
-                // Handle pagination structure: res.data.data
-                const rawData = res?.data?.data || (Array.isArray(res?.data) ? res.data : []);
-                const mappedData = Array.isArray(rawData) ? rawData.map(n => this.mapBackendNotification(n)) : [];
+                // Determine the array from various possible structures
+                let rawData: any[] = [];
+                if (res && res.data) {
+                    if (Array.isArray(res.data.data)) rawData = res.data.data;
+                    else if (Array.isArray(res.data)) rawData = res.data;
+                } else if (Array.isArray(res)) {
+                    rawData = res;
+                }
+
+                const mappedData = rawData.map(n => this.mapBackendNotification(n));
                 this._latestUnread.set(mappedData);
             })
         );
     }
 
     fetchAll() {
-        return this.http.get<{ data: { data: any[] } }>(`${environment.apiUrl}/notifications`).pipe(
+        return this.http.get<any>(`${environment.apiUrl}/notifications`).pipe(
             tap(res => {
-                // Handle pagination structure: res.data.data
-                const rawData = res?.data?.data || (Array.isArray(res?.data) ? res.data : []);
-                const mappedData = Array.isArray(rawData) ? rawData.map(n => this.mapBackendNotification(n)) : [];
+                // Determine the array from various possible structures
+                let rawData: any[] = [];
+                if (res && res.data) {
+                    if (Array.isArray(res.data.data)) rawData = res.data.data;
+                    else if (Array.isArray(res.data)) rawData = res.data;
+                } else if (Array.isArray(res)) {
+                    rawData = res;
+                }
+
+                const mappedData = rawData.map(n => this.mapBackendNotification(n));
                 this._allNotifications.set(mappedData);
             })
         );

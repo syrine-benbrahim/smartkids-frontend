@@ -255,6 +255,7 @@ export const routes: Routes = [
   // ==================== ROUTES ÉDUCATEUR ====================
   {
     path: 'educateur',
+    component: AppLayoutComponent,
     canActivate: [AuthGuard, RoleGuard],
     data: { roles: ['educateur'] },
     children: [

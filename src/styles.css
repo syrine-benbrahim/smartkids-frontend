@@ -6,24 +6,50 @@
 	--sk-primary: #1fbad9;
 	--sk-secondary: #f97316;
 	--sk-accent: #22c55e;
+	
+	/* New Palette */
+	--tangerine: #F08C21;
+	--butter: #F2D88F;
+	--blush: #E36888;
+	--sea: #6698CC;
+	--matcha: #B4B534;
 }
 
 body {
-	@apply bg-gradient-to-br from-primary-50 via-white to-primary-100 min-h-screen text-slate-800;
+	@apply bg-slate-50 min-h-screen text-slate-800 transition-colors duration-300;
+	font-family: 'Inter', sans-serif;
 }
 
-.container-slim {
-	@apply max-w-md mx-auto px-4;
+body.dark {
+	@apply bg-slate-900 text-slate-100;
 }
 
-.btn-primary {
-	@apply inline-flex items-center justify-center rounded-xl bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 font-semibold shadow-md shadow-primary-200 transition;
+.glass {
+	@apply bg-white/70 backdrop-blur-xl border border-white/20 shadow-xl;
 }
 
-.input {
-	@apply w-full rounded-xl border border-slate-200 focus:border-primary-400 focus:ring-2 focus:ring-primary-200 px-4 py-2 outline-none bg-white/80 backdrop-blur;
+.dark .glass {
+	@apply bg-slate-800/70 border-slate-700/50 shadow-2xl;
 }
 
-.card {
-	@apply rounded-2xl bg-white/80 backdrop-blur shadow-lg p-6 border border-white/40;
+.card-fancy {
+	@apply rounded-[2.5rem] bg-white/80 backdrop-blur-xl border border-white/50 shadow-2xl transition-all duration-300 hover:shadow-tangerine/10;
+}
+
+.dark .card-fancy {
+	@apply bg-slate-800/80 border-slate-700/50;
+}
+
+.btn-tangerine {
+  @apply bg-tangerine text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-tangerine/20 hover:scale-105 active:scale-95 transition-all;
+}
+
+::-webkit-scrollbar {
+	width: 10px;
+}
+::-webkit-scrollbar-track {
+	@apply bg-transparent;
+}
+::-webkit-scrollbar-thumb {
+	@apply bg-tangerine/30 rounded-full border-4 border-transparent bg-clip-padding hover:bg-tangerine/50 transition-colors;
 }
