@@ -13,170 +13,192 @@ import {
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div *ngIf="visible()" 
-         class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-         (click)="handleBackdropClick($event)">
-      
-      <div class="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden" 
-           (click)="$event.stopPropagation()">
+    @if (visible()) {
+      <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-300" 
+           (click)="handleBackdropClick($event)">
         
-        <div class="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4 flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-            </div>
-            <h2 class="text-xl font-bold text-white">Traiter l'inscription</h2>
-          </div>
-          <button (click)="close()" class="text-white hover:bg-white/20 p-2 rounded-lg transition-colors">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </button>
-        </div>
-
-        <div class="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+        <div class="glass bg-white/90 dark:bg-slate-800/90 rounded-[3rem] shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden border-white/60" 
+             (click)="$event.stopPropagation()">
           
-          <div *ngIf="inscription() as insc" class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 mb-6">
-            <h3 class="font-bold text-lg mb-3 text-gray-800">Candidat</h3>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <p class="text-sm text-gray-600">Enfant</p>
-                <p class="font-semibold text-gray-800">{{ insc.enfant.prenom }} {{ insc.enfant.nom }}</p>
+          <!-- Header -->
+          <div class="relative px-8 py-6 bg-gradient-to-r from-sea via-indigo-600 to-purple-600 overflow-hidden">
+            <div class="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+            <div class="relative flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
+                  <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="text-xl font-black text-white">Traiter l'inscription</h2>
+                  <p class="text-white/70 text-xs font-bold">Dossier #{{ inscription()?.id }}</p>
+                </div>
               </div>
-              <div>
-                <p class="text-sm text-gray-600">Parent</p>
-                <p class="font-semibold text-gray-800">{{ insc.parent.prenom }} {{ insc.parent.nom }}</p>
-              </div>
-              <div>
-                <p class="text-sm text-gray-600">Niveau souhaité</p>
-                <p class="font-semibold text-indigo-600">{{ getNiveauLabel(insc.niveau_souhaite) }}</p>
-              </div>
-              <div>
-                <p class="text-sm text-gray-600">Année scolaire</p>
-                <p class="font-semibold text-gray-800">{{ insc.annee_scolaire }}</p>
-              </div>
+              <button (click)="close()" class="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-xl text-white flex items-center justify-center transition-all group">
+                <svg class="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
             </div>
           </div>
 
-          <div class="mb-6 flex gap-2 p-1 bg-gray-100 rounded-2xl">
-            <button 
-              type="button"
-              *ngFor="let act of actions"
-              [class.bg-white]="currentAction() === act.value"
-              [class.shadow-md]="currentAction() === act.value"
-              [ngClass]="currentAction() === act.value ? act.activeClass : 'text-gray-600'"
-              (click)="selectAction(act.value)"
-              [disabled]="submitting()"
-              class="flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-200 hover:bg-white/50 cursor-pointer disabled:opacity-50">
-              <div class="flex items-center justify-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="act.icon"/>
-                </svg>
-                {{ act.label }}
-              </div>
-            </button>
-          </div>
-
-          <div class="mb-4 p-3 bg-blue-50 rounded-lg text-sm">
-            <strong>Action sélectionnée :</strong> 
-            <span class="ml-2 px-3 py-1 bg-white rounded-full font-semibold">{{ getActionLabel() }}</span>
-          </div>
-
-          <form (ngSubmit)="handleSubmit()" class="space-y-6">
+          <!-- Body -->
+          <div class="p-8 overflow-y-auto max-h-[calc(90vh-180px)] custom-scrollbar space-y-6">
             
-            <div *ngIf="currentAction() === 'accept'" class="space-y-6">
-              
-              <div *ngIf="loadingClasses()" class="flex items-center justify-center py-8">
-                <svg class="animate-spin w-8 h-8 text-indigo-600" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-              </div>
-
-              <div *ngIf="!loadingClasses() && classesDisponibles().length === 0" class="bg-orange-50 border-2 border-orange-200 rounded-2xl p-4">
-                <div class="flex items-start gap-3">
-                  <svg class="w-6 h-6 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                  </svg>
+            <!-- Candidat Info -->
+            @if (inscription(); as insc) {
+              <div class="glass bg-gradient-to-br from-indigo-50/50 to-purple-50/50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl p-6 border border-indigo-100/50 dark:border-indigo-800/50">
+                <div class="grid grid-cols-2 gap-4">
                   <div>
-                    <p class="font-semibold text-orange-800">Aucune classe disponible</p>
-                    <p class="text-sm text-orange-700 mt-1">Il n'y a actuellement aucune classe avec des places disponibles.</p>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Enfant</p>
+                    <p class="font-black text-slate-800 dark:text-white">{{ insc.enfant.prenom }} {{ insc.enfant.nom }}</p>
+                  </div>
+                  <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Parent</p>
+                    <p class="font-black text-slate-800 dark:text-white">{{ insc.parent.prenom }} {{ insc.parent.nom }}</p>
+                  </div>
+                  <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Niveau</p>
+                    <p class="font-black text-sea">{{ getNiveauLabel(insc.niveau_souhaite) }}</p>
+                  </div>
+                  <div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Année</p>
+                    <p class="font-black text-slate-800 dark:text-white">{{ insc.annee_scolaire }}</p>
                   </div>
                 </div>
               </div>
+            }
 
-              <div *ngIf="classesDisponibles().length > 0">
-                <label class="block text-sm font-bold text-gray-700 mb-2">Classe <span class="text-red-500">*</span></label>
-                <select [ngModel]="selectedClasseId()" (ngModelChange)="selectedClasseId.set($event)" name="classe_id" required
-                  class="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
-                  <option value="">Sélectionner une classe...</option>
-                  <option *ngFor="let classe of classesDisponibles()" [value]="classe.id">
-                    {{ classe.nom }} - {{ classe.places_disponibles !== null ? classe.places_disponibles + ' place(s)' : 'Illimité' }} ({{ classe.taux_occupation }}% occupé)
-                  </option>
-                </select>
-              </div>
-
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-bold text-gray-700 mb-2">Frais d'inscription (DT)</label>
-                  <input type="number" [(ngModel)]="fraisInscription" name="frais_inscription" min="0" step="0.01" placeholder="0.00"
-                    class="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
-                </div>
-                <div>
-                  <label class="block text-sm font-bold text-gray-700 mb-2">Frais mensuels (DT)</label>
-                  <input type="number" [(ngModel)]="fraisMensuel" name="frais_mensuel" min="0" step="0.01" placeholder="0.00"
-                    class="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
-                </div>
-              </div>
-
-              <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
-                <p class="text-sm text-blue-800">
-                  <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                  </svg>
-                  Le parent choisira sa méthode de paiement (espèces, carte, en ligne) lors du paiement.
-                </p>
-              </div>
+            <!-- Action Selector -->
+            <div class="flex gap-2 p-2 glass bg-slate-50/50 dark:bg-slate-700/20 rounded-2xl">
+              @for (act of actions; track act.value) {
+                <button type="button"
+                        (click)="selectAction(act.value)"
+                        [disabled]="submitting()"
+                        class="flex-1 py-3 px-4 rounded-xl font-black text-xs uppercase tracking-wider transition-all duration-200 disabled:opacity-50"
+                        [class.bg-white]="currentAction() === act.value"
+                        [class.dark:bg-slate-700]="currentAction() === act.value"
+                        [class.shadow-lg]="currentAction() === act.value"
+                        [ngClass]="currentAction() === act.value ? act.activeClass : 'text-slate-400 hover:text-slate-600 hover:bg-white/50'">
+                  <div class="flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" [attr.d]="act.icon"/>
+                    </svg>
+                    {{ act.label }}
+                  </div>
+                </button>
+              }
             </div>
 
+            <!-- Accept Form -->
+            @if (currentAction() === 'accept') {
+              <div class="space-y-5">
+                
+                @if (loadingClasses()) {
+                  <div class="flex items-center justify-center py-12">
+                    <svg class="animate-spin w-10 h-10 text-sea" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  </div>
+                }
+
+                @if (!loadingClasses() && classesDisponibles().length === 0) {
+                  <div class="glass bg-tangerine/5 border-2 border-tangerine/20 rounded-2xl p-5">
+                    <div class="flex items-start gap-3">
+                      <svg class="w-6 h-6 text-tangerine flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                      </svg>
+                      <div>
+                        <p class="font-black text-slate-800 dark:text-white text-sm">Aucune classe disponible</p>
+                        <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">Pas de places actuellement.</p>
+                      </div>
+                    </div>
+                  </div>
+                }
+
+                @if (classesDisponibles().length > 0) {
+                  <div>
+                    <label class="block px-2 mb-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      Classe <span class="text-blush">*</span>
+                    </label>
+                    <select [ngModel]="selectedClasseId()" (ngModelChange)="selectedClasseId.set($event)" name="classe_id" required
+                            class="w-full px-5 py-3 glass bg-white/60 dark:bg-slate-700/40 border-2 border-white/60 focus:border-sea/50 rounded-xl text-sm font-bold outline-none transition-all">
+                      <option value="">Sélectionner...</option>
+                      @for (classe of classesDisponibles(); track classe.id) {
+                        <option [value]="classe.id">
+                          {{ classe.nom }} - {{ classe.places_disponibles !== null ? classe.places_disponibles + ' place(s)' : 'Illimité' }} ({{ classe.taux_occupation }}%)
+                        </option>
+                      }
+                    </select>
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block px-2 mb-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">Frais inscription (DT)</label>
+                      <input type="number" [(ngModel)]="fraisInscription" name="frais_inscription" min="0" step="0.01" placeholder="0.00"
+                             class="w-full px-5 py-3 glass bg-white/60 dark:bg-slate-700/40 border-2 border-white/60 focus:border-sea/50 rounded-xl text-sm font-bold outline-none transition-all">
+                    </div>
+                    <div>
+                      <label class="block px-2 mb-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">Frais mensuels (DT)</label>
+                      <input type="number" [(ngModel)]="fraisMensuel" name="frais_mensuel" min="0" step="0.01" placeholder="0.00"
+                             class="w-full px-5 py-3 glass bg-white/60 dark:bg-slate-700/40 border-2 border-white/60 focus:border-sea/50 rounded-xl text-sm font-bold outline-none transition-all">
+                    </div>
+                  </div>
+
+                  <div class="glass bg-sea/5 border-l-4 border-sea rounded-xl p-4">
+                    <p class="text-xs text-slate-700 dark:text-slate-300 font-medium flex items-start gap-2">
+                      <svg class="w-4 h-4 text-sea flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      Le parent choisira sa méthode de paiement lors du règlement.
+                    </p>
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- Remarques -->
             <div>
-              <label class="block text-sm font-bold text-gray-700 mb-2">Remarques de l'administration</label>
-              <textarea [(ngModel)]="remarques" name="remarques" rows="4" placeholder="Commentaires optionnels..."
-                class="w-full px-4 py-3 bg-white border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all resize-none">
+              <label class="block px-2 mb-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">Remarques</label>
+              <textarea [(ngModel)]="remarques" name="remarques" rows="3" placeholder="Commentaires optionnels..."
+                        class="w-full px-5 py-3 glass bg-white/60 dark:bg-slate-700/40 border-2 border-white/60 focus:border-sea/50 rounded-xl text-sm font-medium outline-none transition-all resize-none">
               </textarea>
             </div>
 
-          </form>
+          </div>
+
+          <!-- Footer -->
+          <div class="px-8 py-6 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
+            <button (click)="close()" type="button"
+                    class="px-6 py-3 glass hover:bg-white dark:hover:bg-slate-700 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+              Annuler
+            </button>
+
+            <button (click)="handleSubmit()" [disabled]="!canSubmit() || submitting()"
+                    [ngClass]="getSubmitButtonClass()"
+                    class="px-8 py-3 rounded-xl font-black text-xs uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100">
+              @if (!submitting()) {
+                {{ getSubmitButtonLabel() }}
+              } @else {
+                <span class="flex items-center gap-2">
+                  <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Traitement...
+                </span>
+              }
+            </button>
+          </div>
+
         </div>
-
-        <div class="px-6 py-4 bg-gray-50 border-t flex items-center justify-between">
-          <button (click)="close()" type="button"
-            class="px-6 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-xl transition-all">
-            Annuler
-          </button>
-
-          <button (click)="handleSubmit()" [disabled]="!canSubmit() || submitting()" [ngClass]="getSubmitButtonClass()"
-            class="px-8 py-2.5 font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-            <span *ngIf="!submitting()">{{ getSubmitButtonLabel() }}</span>
-            <span *ngIf="submitting()" class="flex items-center gap-2">
-              <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Traitement...
-            </span>
-          </button>
-        </div>
-
       </div>
-    </div>
+    }
   `,
   styles: [`
     :host { display: contents; }
-    button { pointer-events: auto !important; cursor: pointer !important; }
-    button:disabled { pointer-events: none !important; cursor: not-allowed !important; }
   `]
 })
 export class InscriptionAcceptModalComponent implements OnInit {
@@ -212,9 +234,24 @@ export class InscriptionAcceptModalComponent implements OnInit {
   remarques = '';
 
   actions = [
-    { value: 'accept' as const, label: 'Accepter', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', activeClass: 'text-green-600' },
-    { value: 'wait' as const, label: 'Liste d\'attente', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', activeClass: 'text-blue-600' },
-    { value: 'reject' as const, label: 'Refuser', icon: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z', activeClass: 'text-red-600' }
+    { 
+      value: 'accept' as const, 
+      label: 'Accepter', 
+      icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 
+      activeClass: 'text-matcha shadow-matcha/20' 
+    },
+    { 
+      value: 'wait' as const, 
+      label: 'En attente', 
+      icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 
+      activeClass: 'text-indigo-600 shadow-indigo-500/20' 
+    },
+    { 
+      value: 'reject' as const, 
+      label: 'Refuser', 
+      icon: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z', 
+      activeClass: 'text-blush shadow-blush/20' 
+    }
   ];
 
   canSubmit = computed(() => {
@@ -328,21 +365,20 @@ export class InscriptionAcceptModalComponent implements OnInit {
     this.classesDisponibles.set([]);
   }
 
-  getActionLabel(): string {
-    const labels = { accept: 'Accepter', wait: 'Liste d\'attente', reject: 'Refuser' };
-    return labels[this.currentAction()];
-  }
-
   getSubmitButtonLabel(): string {
-    const labels = { accept: 'Accepter l\'inscription', wait: 'Mettre en attente', reject: 'Refuser l\'inscription' };
+    const labels = { 
+      accept: 'Accepter', 
+      wait: 'En attente', 
+      reject: 'Refuser' 
+    };
     return labels[this.currentAction()];
   }
 
   getSubmitButtonClass(): string {
     const classes = {
-      accept: 'bg-gradient-to-r from-green-500 to-emerald-600 text-white',
-      wait: 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white',
-      reject: 'bg-gradient-to-r from-red-500 to-rose-600 text-white'
+      accept: 'bg-matcha text-white shadow-matcha/30',
+      wait: 'bg-indigo-600 text-white shadow-indigo-500/30',
+      reject: 'bg-blush text-white shadow-blush/30'
     };
     return classes[this.currentAction()];
   }

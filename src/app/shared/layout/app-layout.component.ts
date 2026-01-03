@@ -597,7 +597,7 @@ export class AppLayoutComponent implements OnInit {
       roles: ['admin', 'educateur', 'parent']
     },
     {
-      title: 'Teachers',
+      title: 'Éducateurs',
       subtitle: 'Staff management',
       route: '/admin/educateurs',
       icon: '<svg></svg>',
@@ -606,7 +606,7 @@ export class AppLayoutComponent implements OnInit {
       roles: ['admin']
     },
     {
-      title: 'Students',
+      title: 'Inscriptions',
       subtitle: 'Kids & classes',
       route: '/admin/classes',
       icon: '<svg></svg>',
@@ -642,6 +642,15 @@ export class AppLayoutComponent implements OnInit {
       roles: ['parent']
     },
     {
+      title: 'Subjects',
+      subtitle: 'Curriculum & Levels',
+      route: '/admin/matieres/par-niveau',
+      icon: '<svg></svg>',
+      emoji: '📚',
+      color: 'blue',
+      roles: ['admin']
+    },
+    {
       title: 'Activities',
       subtitle: 'Manage activities',
       route: '/admin/activites',
@@ -651,7 +660,7 @@ export class AppLayoutComponent implements OnInit {
       roles: ['admin']
     },
     {
-      title: 'Calendar',
+      title: 'Calendrier',
       subtitle: 'Schedule',
       route: '/admin/emplois',
       icon: '<svg></svg>',
@@ -935,9 +944,9 @@ export class AppLayoutComponent implements OnInit {
     const url = this.router.url;
     if (url.includes('/menus')) return 'Menus';
     if (url.includes('/activites')) return 'Activities';
-    if (url.includes('/emplois')) return 'Calendar';
-    if (url.includes('/classes')) return 'Students';
-    if (url.includes('/educateurs')) return 'Teachers';
+    if (url.includes('/emplois')) return 'Calendrier';
+    if (url.includes('/classes')) return 'Inscriptions';
+    if (url.includes('/educateurs')) return 'Éducateurs';
     if (url.includes('/inscriptions')) return 'Parents';
     if (url.includes('/holidays')) return 'Holidays';
     if (url.includes('/events')) return 'Events';

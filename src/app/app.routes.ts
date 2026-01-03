@@ -192,6 +192,11 @@ export const routes: Routes = [
               .then(m => m.MatieresListComponent)
           },
           {
+            path: 'par-niveau',
+            loadComponent: () => import('./pages/admin/matieres/niveau/matieres-par-niveau.component')
+              .then(m => m.MatieresParNiveauComponent)
+          },
+          {
             path: 'create',
             loadComponent: () => import('./pages/admin/matieres/matieres-modal.component')
               .then(m => m.MatieresModalComponent)

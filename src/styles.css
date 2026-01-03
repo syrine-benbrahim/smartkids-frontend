@@ -6,7 +6,7 @@
 	--sk-primary: #1fbad9;
 	--sk-secondary: #f97316;
 	--sk-accent: #22c55e;
-	
+
 	/* New Palette */
 	--tangerine: #F08C21;
 	--butter: #F2D88F;
@@ -41,15 +41,134 @@ body.dark {
 }
 
 .btn-tangerine {
-  @apply bg-tangerine text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-tangerine/20 hover:scale-105 active:scale-95 transition-all;
+	@apply bg-tangerine text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-tangerine/20 hover:scale-105 active:scale-95 transition-all;
 }
 
 ::-webkit-scrollbar {
 	width: 10px;
 }
+
 ::-webkit-scrollbar-track {
 	@apply bg-transparent;
 }
+
 ::-webkit-scrollbar-thumb {
 	@apply bg-tangerine/30 rounded-full border-4 border-transparent bg-clip-padding hover:bg-tangerine/50 transition-colors;
+}
+
+/* Premium Animations */
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+	}
+
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes fadeInUp {
+	from {
+		opacity: 0;
+		transform: translateY(30px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes fadeInRight {
+	from {
+		opacity: 0;
+		transform: translateX(30px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
+
+@keyframes scaleIn {
+	from {
+		opacity: 0;
+		transform: scale(0.9);
+	}
+
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+@keyframes bounceSlow {
+
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+
+	50% {
+		transform: translateY(-15px);
+	}
+}
+
+@keyframes shake {
+
+	0%,
+	100% {
+		transform: translateX(0);
+	}
+
+	25% {
+		transform: translateX(-5px);
+	}
+
+	75% {
+		transform: translateX(5px);
+	}
+}
+
+.animate-fade-in {
+	animation: fadeIn 0.6s ease-out forwards;
+}
+
+.animate-fade-in-up {
+	animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.animate-fade-in-right {
+	animation: fadeInRight 0.8s ease-out forwards;
+}
+
+.animate-scale-in {
+	animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-bounce-slow {
+	animation: bounceSlow 3s ease-in-out infinite;
+}
+
+.animate-shake {
+	animation: shake 0.4s ease-in-out;
+}
+
+/* Custom Scrollbar Utility */
+.custom-scrollbar::-webkit-scrollbar {
+	width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+	@apply bg-transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+	@apply bg-slate-200 rounded-full hover:bg-slate-300 transition-colors;
+}
+
+/* Background Patterns */
+.bg-grid-white {
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M0 40L40 40L40 0' fill='none' stroke='white' stroke-opacity='0.1' stroke-width='1'/%3E%3C/svg%3E");
 }

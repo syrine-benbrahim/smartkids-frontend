@@ -10,237 +10,295 @@ import { finalize } from 'rxjs';
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    @if (isLoading()) {
-      <div class="flex items-center justify-center min-h-[600px]">
-        <div class="relative w-24 h-24">
-          <div class="absolute inset-0 border-4 border-pink-200 rounded-full animate-ping"></div>
-          <div class="absolute inset-2 border-4 border-pink-500 rounded-full animate-spin"></div>
-          <div class="absolute inset-0 flex items-center justify-center text-2xl">🎨</div>
+    <div class="p-4 sm:p-8 space-y-12 animate-fade-in text-slate-800 dark:text-slate-100">
+      @if (isLoading()) {
+        <div class="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+          <div class="relative w-20 h-20">
+            <div class="absolute inset-0 border-4 border-sea/20 rounded-full animate-ping"></div>
+            <div class="absolute inset-2 border-4 border-sea rounded-full animate-spin border-t-transparent"></div>
+          </div>
+          <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 animate-pulse">Chargement de la console...</p>
         </div>
-      </div>
-    } @else if (errorMessage()) {
-      <div class="bg-red-50 border-4 border-red-200 rounded-3xl p-12 text-center max-w-2xl mx-auto my-12">
-        <div class="text-6xl mb-4">😰</div>
-        <h2 class="text-2xl font-black text-red-900 mb-2">Oops! Something went wrong</h2>
-        <p class="text-red-700 mb-6 font-semibold">{{ errorMessage() }}</p>
-        <button (click)="loadDashboardData()" 
-                class="px-8 py-4 bg-red-500 text-white rounded-2xl font-black hover:bg-red-600 transition-all shadow-lg hover:shadow-xl">
-          🔄 Try Again
-        </button>
-      </div>
-    } @else if (dashboardData(); as data) {
-      <!-- Welcome Banner with Playful Design -->
-      <div class="bg-gradient-to-br from-pink-500 via-orange-500 to-yellow-500 rounded-3xl p-8 mb-8 relative overflow-hidden shadow-xl">
-        <!-- Decorative elements -->
-        <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
-        <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24"></div>
-        
-        <div class="relative z-10">
-          <div class="flex items-center justify-between">
-            <div>
-              <h1 class="text-3xl font-black text-white mb-2">Welcome back, {{ getUserName() }}! 👋</h1>
-              <p class="text-white/90 text-lg">Here's what's happening with your kindergarten today</p>
-            </div>
-            <div class="hidden lg:flex items-center space-x-3">
-              <div class="text-right">
-                <p class="text-white/90 text-sm">Today's Date</p>
-                <p class="text-white text-lg font-bold">{{ getCurrentDate() }}</p>
+      } @else if (errorMessage()) {
+        <div class="p-12 glass bg-blush/5 border-blush/20 rounded-[3rem] text-center max-w-2xl mx-auto my-12">
+          <div class="text-6xl mb-6">⚠️</div>
+          <h2 class="text-2xl font-black text-slate-900 dark:text-white mb-2 uppercase tracking-tight">Erreur de Synchronisation</h2>
+          <p class="text-slate-500 font-medium mb-8">{{ errorMessage() }}</p>
+          <button (click)="loadDashboardData()" 
+                  class="px-10 py-4 bg-blush text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-blush/30">
+            Réessayer
+          </button>
+        </div>
+      } @else if (dashboardData(); as data) {
+        <!-- Premium Header Area -->
+        <div class="relative group">
+          <div class="absolute -inset-1 bg-gradient-to-r from-sea via-tangerine to-blush rounded-[3rem] blur opacity-10 group-hover:opacity-25 transition duration-1000"></div>
+          <div class="relative flex flex-col lg:flex-row items-center justify-between gap-8 p-10 glass dark:bg-slate-800/40 rounded-[3rem] overflow-hidden">
+            <div class="flex items-center gap-8 relative z-10">
+              <div class="w-20 h-20 bg-gradient-to-br from-sea to-blue-600 rounded-[1.8rem] flex items-center justify-center shadow-2xl shadow-sea/30 text-3xl font-black text-white transform group-hover:scale-110 transition-transform">
+                👑
               </div>
-              <div class="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+              <div>
+                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight mb-3">
+                  Bonjour, {{ getUserName() }} !
+                </h1>
+                <p class="text-lg text-slate-500 dark:text-slate-400 font-medium max-w-lg leading-relaxed">
+                  Voici l'état actuel de votre établissement pour la journée du <br><span class="text-sea font-black">{{ getCurrentDate() }}</span>.
+                </p>
+              </div>
+            </div>
+
+            <div class="hidden lg:flex flex-col items-end relative z-10">
+              <div class="px-6 py-3 bg-white/50 dark:bg-slate-700/50 backdrop-blur-md rounded-2xl border border-white/40 shadow-sm flex items-center gap-4">
+                 <div class="w-3 h-3 bg-matcha rounded-full animate-pulse"></div>
+                 <span class="text-[10px] font-black uppercase tracking-widest text-slate-500">Système Opérationnel</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamic Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          
+          <!-- Children Stat -->
+          <div class="group relative">
+            <div class="absolute -inset-0.5 bg-gradient-to-r from-sea to-blue-400 rounded-[2.5rem] blur opacity-0 group-hover:opacity-10 transition duration-500"></div>
+            <div class="relative glass dark:bg-slate-800/40 p-8 rounded-[2.5rem] border-white/60 hover:border-sea/50 transition-all flex flex-col gap-6">
+              <div class="flex items-center justify-between">
+                <div class="w-14 h-14 bg-sea/10 rounded-2xl flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform">
+                  👶
+                </div>
+                <span class="text-[10px] font-black text-sea uppercase tracking-widest bg-sea/5 px-3 py-1.5 rounded-lg border border-sea/10">
+                  Élèves
+                </span>
+              </div>
+              <div>
+                <p class="text-4xl font-black tracking-tighter mb-2">{{ data.data.statistics.children.total }}</p>
+                <div class="flex items-center gap-2 text-matcha font-black text-[10px] uppercase tracking-widest">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                  </svg>
+                  +{{ data.data.statistics.children.new_this_month }} ce mois
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Educators Stat -->
+          <div class="group relative">
+            <div class="absolute -inset-0.5 bg-gradient-to-r from-tangerine to-orange-400 rounded-[2.5rem] blur opacity-0 group-hover:opacity-10 transition duration-500"></div>
+            <div class="relative glass dark:bg-slate-800/40 p-8 rounded-[2.5rem] border-white/60 hover:border-tangerine/50 transition-all flex flex-col gap-6">
+              <div class="flex items-center justify-between">
+                <div class="w-14 h-14 bg-tangerine/10 rounded-2xl flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform">
+                  👩‍🏫
+                </div>
+                <span class="text-[10px] font-black text-tangerine uppercase tracking-widest bg-tangerine/5 px-3 py-1.5 rounded-lg border border-tangerine/10">
+                  Staff
+                </span>
+              </div>
+              <div>
+                <p class="text-4xl font-black tracking-tighter mb-2">{{ data.data.statistics.staff.total_educators }}</p>
+                <div class="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-widest uppercase">
+                  <span class="w-1.5 h-1.5 bg-tangerine rounded-full"></span>
+                  {{ data.data.statistics.staff.total_classes }} classes actives
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Attendance Stat -->
+          <div class="group relative">
+            <div class="absolute -inset-0.5 bg-gradient-to-r from-matcha to-green-400 rounded-[2.5rem] blur opacity-0 group-hover:opacity-10 transition duration-500"></div>
+            <div class="relative glass dark:bg-slate-800/40 p-8 rounded-[2.5rem] border-white/60 hover:border-matcha/50 transition-all flex flex-col gap-6">
+              <div class="flex items-center justify-between">
+                <div class="w-14 h-14 bg-matcha/10 rounded-2xl flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform">
+                  📊
+                </div>
+                <span class="text-[10px] font-black text-matcha uppercase tracking-widest bg-matcha/5 px-3 py-1.5 rounded-lg border border-matcha/10">
+                  Présences
+                </span>
+              </div>
+              <div>
+                <p class="text-4xl font-black tracking-tighter mb-2">{{ data.data.statistics.attendance.today.rate }}%</p>
+                <div class="flex items-center gap-2 text-matcha font-black text-[10px] uppercase tracking-widest">
+                  {{ data.data.statistics.attendance.today.present }} présents / {{ data.data.statistics.attendance.today.absent }} absents
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payments Stat -->
+          <div class="group relative">
+            <div class="absolute -inset-0.5 bg-gradient-to-r from-blush to-red-400 rounded-[2.5rem] blur opacity-0 group-hover:opacity-10 transition duration-500"></div>
+            <div class="relative glass dark:bg-slate-800/40 p-8 rounded-[2.5rem] border-white/60 hover:border-blush/50 transition-all flex flex-col gap-6">
+              <div class="flex items-center justify-between">
+                <div class="w-14 h-14 bg-blush/10 rounded-2xl flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform">
+                  💰
+                </div>
+                <span class="text-[10px] font-black text-blush uppercase tracking-widest bg-blush/5 px-3 py-1.5 rounded-lg border border-blush/10">
+                  Finances
+                </span>
+              </div>
+              <div>
+                <p class="text-4xl font-black tracking-tighter mb-2">{{ data.data.statistics.payments.pending }}</p>
+                <div class="flex items-center gap-2 text-blush font-black text-[10px] uppercase tracking-widest">
+                  {{ data.data.statistics.payments.pending_amount }} DT en attente
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Insights Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <!-- Attendance Analytics Chart -->
+          <div class="glass dark:bg-slate-800/40 p-10 rounded-[3rem] border-white/60 space-y-10">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <div class="w-1.5 h-8 bg-sea rounded-full"></div>
+                <h3 class="text-xl font-black uppercase tracking-tight">Tendance des Présences</h3>
+              </div>
+              <div class="flex gap-2">
+                <div class="w-3 h-3 rounded-full bg-sea"></div>
+                <div class="w-3 h-3 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+              </div>
+            </div>
+            
+            <div class="h-64 flex items-end justify-between gap-6 px-4">
+              @for (day of data.data.charts_data.attendance_trend; track day.date) {
+                <div class="flex-1 flex flex-col items-center gap-4 group cursor-pointer">
+                  <div class="w-full relative h-48 flex items-end">
+                    <div [style.height.%]="day.rate" 
+                         class="w-full bg-gradient-to-t from-sea to-blue-400 rounded-2xl group-hover:scale-105 transition-all duration-500 shadow-xl shadow-sea/10 relative">
+                       <div class="absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1.5 glass bg-white/90 dark:bg-slate-700/90 rounded-xl text-[10px] font-black opacity-0 group-hover:opacity-100 transition-all transform group-hover:-translate-y-2 border border-white/40 shadow-xl text-sea">
+                         {{ day.rate }}%
+                       </div>
+                    </div>
+                  </div>
+                  <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest border-t border-slate-100 dark:border-slate-700/50 pt-2 w-full text-center">
+                    {{ day.date | date:'EEE' }}
+                  </span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Upcoming Events Board -->
+          <div class="glass dark:bg-slate-800/40 p-10 rounded-[3rem] border-white/60 space-y-8">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <div class="w-1.5 h-8 bg-tangerine rounded-full"></div>
+                <h3 class="text-xl font-black uppercase tracking-tight">Agenda & Événements</h3>
+              </div>
+              <button class="w-10 h-10 glass hover:bg-white rounded-xl flex items-center justify-center transition-all">
+                <svg class="w-5 h-5 text-tangerine" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
                 </svg>
-              </div>
+              </button>
             </div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Stats Grid with Playful Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        
-        <!-- Students Card -->
-        <div class="group bg-white rounded-3xl p-6 shadow-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-4 border-blue-100">
-          <div class="flex items-center justify-between mb-4">
-            <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-              </svg>
-            </div>
-            <div class="text-blue-500 text-2xl animate-bounce-slow">👶</div>
-          </div>
-          <div>
-            <p class="text-gray-600 text-sm font-bold mb-1 uppercase tracking-wide">Total Students</p>
-            <p class="text-4xl font-black text-gray-900 mb-2">{{ data.data.statistics.children.total }}</p>
-            <div class="flex items-center text-green-600 text-sm font-semibold">
-              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
-              </svg>
-              +{{ data.data.statistics.children.new_this_month }} new this month
-            </div>
-          </div>
-        </div>
-
-        <!-- Teachers Card -->
-        <div class="group bg-white rounded-3xl p-6 shadow-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-4 border-green-100">
-          <div class="flex items-center justify-between mb-4">
-            <div class="w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-              </svg>
-            </div>
-            <div class="text-green-500 text-2xl animate-bounce-slow" style="animation-delay: 0.1s;">👩‍🏫</div>
-          </div>
-          <div>
-            <p class="text-gray-600 text-sm font-bold mb-1 uppercase tracking-wide">Teachers</p>
-            <p class="text-4xl font-black text-gray-900 mb-2">{{ data.data.statistics.staff.total_educators }}</p>
-            <div class="flex items-center text-green-600 text-sm font-semibold">
-              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
-              </svg>
-              {{ data.data.statistics.staff.total_classes }} active classes
-            </div>
-          </div>
-        </div>
-
-        <!-- Attendance Card -->
-        <div class="group bg-white rounded-3xl p-6 shadow-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-4 border-purple-100">
-          <div class="flex items-center justify-between mb-4">
-            <div class="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-              </svg>
-            </div>
-            <div class="text-purple-500 text-2xl animate-bounce-slow" style="animation-delay: 0.2s;">📊</div>
-          </div>
-          <div>
-            <p class="text-gray-600 text-sm font-bold mb-1 uppercase tracking-wide">Attendance Today</p>
-            <p class="text-4xl font-black text-gray-900 mb-2">{{ data.data.statistics.attendance.today.rate }}%</p>
-            <div class="flex items-center text-purple-600 text-sm font-semibold">
-              <span class="mr-1">👥</span>
-              {{ data.data.statistics.attendance.today.present }} present / {{ data.data.statistics.attendance.today.absent }} absent
-            </div>
-          </div>
-        </div>
-
-        <!-- Payments Card -->
-        <div class="group bg-white rounded-3xl p-6 shadow-sm hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-4 border-yellow-100">
-          <div class="flex items-center justify-between mb-4">
-            <div class="w-16 h-16 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-              <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-              </svg>
-            </div>
-            <div class="text-yellow-500 text-2xl animate-bounce-slow" style="animation-delay: 0.3s;">💰</div>
-          </div>
-          <div>
-            <p class="text-gray-600 text-sm font-bold mb-1 uppercase tracking-wide">Pending Payments</p>
-            <p class="text-4xl font-black text-gray-900 mb-2">{{ data.data.statistics.payments.pending }}</p>
-            <div class="flex items-center text-yellow-600 text-sm font-semibold">
-              <span class="mr-1">💶</span>
-              {{ data.data.statistics.payments.pending_amount }} {{ data.data.statistics.payments.currency }}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Charts & Tables Section -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <!-- Attendance Trend Chart -->
-        <div class="bg-white rounded-3xl p-8 shadow-sm border-4 border-pink-100">
-          <h3 class="text-xl font-black text-gray-900 mb-6 flex items-center">
-            <span class="w-2 h-8 bg-gradient-to-b from-pink-500 to-orange-500 rounded-full mr-3"></span>
-            Attendance Trend
-          </h3>
-          <div class="h-64 flex items-end justify-between gap-4">
-            @for (day of data.data.charts_data.attendance_trend; track day.date) {
-              <div class="flex-1 flex flex-col items-center gap-2 group">
-                <div class="w-full relative">
-                  <div [style.height.%]="day.rate" class="w-full bg-gradient-to-t from-pink-500 to-pink-400 rounded-t-2xl group-hover:scale-105 transition-all shadow-lg min-h-[4px]"></div>
-                  <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-pink-500 text-white px-2 py-1 rounded-lg text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">
-                    {{ day.rate }}%
+            <div class="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+              @for (event of data.data.upcoming_events; track event.id) {
+                <div class="group p-6 glass hover:bg-white dark:hover:bg-slate-700/50 rounded-3xl border-white/40 hover:border-tangerine/30 transition-all flex items-center justify-between gap-6 cursor-pointer">
+                  <div class="flex items-center gap-6">
+                    <div class="w-16 h-16 bg-tangerine/10 rounded-2xl flex flex-col items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
+                      <span class="text-2xl font-black text-tangerine leading-none">{{ event.date | date:'dd' }}</span>
+                      <span class="text-[8px] font-black text-tangerine uppercase tracking-tighter">{{ event.date | date:'MMM' }}</span>
+                    </div>
+                    <div>
+                      <h4 class="font-black text-slate-900 dark:text-white group-hover:text-tangerine transition-colors">{{ event.title }}</h4>
+                      <p class="text-xs font-medium text-slate-400 mt-1 flex items-center gap-2">
+                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                         </svg>
+                         {{ event.time }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <span class="block text-[10px] font-black text-tangerine uppercase tracking-widest bg-tangerine/5 px-3 py-1.5 rounded-lg border border-tangerine/10">
+                      {{ event.participants_expected }} Prévus
+                    </span>
                   </div>
                 </div>
-                <span class="text-[10px] font-bold text-gray-600 mt-2 rotate-45 lg:rotate-0">{{ day.date | date:'EEE' }}</span>
-              </div>
-            }
-          </div>
-        </div>
-
-        <!-- Upcoming Events / Today's Events -->
-        <div class="bg-white rounded-3xl p-6 shadow-sm border-4 border-orange-100">
-          <h3 class="text-xl font-black text-gray-900 mb-4 flex items-center">
-            <span class="w-2 h-8 bg-gradient-to-b from-orange-500 to-yellow-500 rounded-full mr-3"></span>
-            Upcoming Events
-          </h3>
-          <div class="space-y-4 max-h-[256px] overflow-y-auto pr-2 custom-scrollbar">
-            @for (event of data.data.upcoming_events; track event.id) {
-              <div class="flex items-start gap-3 p-3 bg-gradient-to-r from-pink-50 to-orange-50 rounded-2xl border-2 border-pink-200">
-                <div class="w-12 h-12 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg text-xl">
-                  📅
+              } @empty {
+                <div class="flex flex-col items-center justify-center py-20 text-center opacity-30">
+                  <div class="text-6xl mb-4">📅</div>
+                  <p class="text-sm font-black uppercase tracking-widest italic">Aucun événement à venir</p>
                 </div>
-                <div class="flex-1">
-                  <p class="text-sm font-bold text-gray-900">{{ event.title }}</p>
-                  <p class="text-xs text-gray-600">{{ event.date | date:'mediumDate' }} - {{ event.time }}</p>
-                  <p class="text-[10px] font-semibold text-pink-600">{{ event.participants_expected }} participants expected</p>
-                </div>
-              </div>
-            } @empty {
-              <div class="text-center py-8">
-                <p class="text-gray-500 font-bold italic">No upcoming events scheduled</p>
-              </div>
-            }
-          </div>
-        </div>
-      </div>
-
-      <!-- Recent Activities Table -->
-      <div class="bg-white rounded-3xl p-8 shadow-sm border-4 border-blue-100 mb-8">
-        <div class="flex items-center justify-between mb-6">
-          <h3 class="text-xl font-black text-gray-900 flex items-center">
-            <span class="w-2 h-8 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full mr-3"></span>
-            Recent Activities
-          </h3>
-          <a routerLink="/admin/inscriptions" class="text-blue-600 font-bold hover:underline">View All</a>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full">
-            <thead>
-              <tr class="border-b-2 border-gray-100">
-                <th class="text-left py-4 px-4 text-xs font-black text-gray-500 uppercase">Description</th>
-                <th class="text-left py-4 px-4 text-xs font-black text-gray-500 uppercase">Type</th>
-                <th class="text-left py-4 px-4 text-xs font-black text-gray-500 uppercase">Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (activity of data.data.recent_activities; track activity.id) {
-                <tr class="border-b border-gray-50 hover:bg-blue-50/50 transition-colors">
-                  <td class="py-4 px-4">
-                    <div class="flex items-center gap-3">
-                      <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                        <i [class]="'fas fa-' + activity.icon"></i>
-                      </div>
-                      <div>
-                        <p class="font-bold text-gray-900 text-sm">{{ activity.title }}</p>
-                        <p class="text-xs text-gray-500">{{ activity.description }}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="py-4 px-4">
-                    <span class="px-3 py-1 bg-gray-100 rounded-full text-[10px] font-bold text-gray-600 uppercase">
-                      {{ activity.type }}
-                    </span>
-                  </td>
-                  <td class="py-4 px-4 text-xs text-gray-500">
-                    {{ activity.timestamp | date:'short' }}
-                  </td>
-                </tr>
               }
-            </tbody>
-          </table>
+            </div>
+          </div>
         </div>
-      </div>
-    }
+
+        <!-- Recent Activities Feed -->
+        <div class="glass dark:bg-slate-800/40 p-10 rounded-[3rem] border-white/60 space-y-8">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div class="w-1.5 h-8 bg-blush rounded-full"></div>
+              <h3 class="text-xl font-black uppercase tracking-tight">Activités Récentes</h3>
+            </div>
+            <a routerLink="/admin/inscriptions" 
+               class="px-6 py-2 glass hover:bg-white dark:hover:bg-slate-700/50 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-blush transition-all flex items-center gap-3">
+              Voir tout l'historique
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </a>
+          </div>
+
+          <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-separate border-spacing-y-4">
+              <thead>
+                <tr>
+                  <th class="px-8 pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Activité / Description</th>
+                  <th class="px-8 pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Catégorie</th>
+                  <th class="px-8 pb-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Date & Heure</th>
+                  <th class="px-8 pb-4 text-right"></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (activity of data.data.recent_activities; track activity.id) {
+                  <tr class="group cursor-pointer">
+                    <td class="px-8 py-6 glass bg-white/40 dark:bg-slate-800/20 rounded-l-[2.5rem] border-y border-l border-white/60 group-hover:bg-white dark:group-hover:bg-slate-700/50 transition-all">
+                      <div class="flex items-center gap-6">
+                        <div class="w-14 h-14 bg-gradient-to-br transition-all duration-500 group-hover:scale-110 shadow-lg text-white rounded-2xl flex items-center justify-center text-xl"
+                             [class]="activity.type === 'Paiement' ? 'from-matcha to-emerald-600 shadow-matcha/20' : activity.type === 'Inscription' ? 'from-sea to-blue-600 shadow-sea/20' : 'from-blush to-purple-600 shadow-blush/20'">
+                          <i [class]="'fas fa-' + activity.icon"></i>
+                        </div>
+                        <div>
+                          <p class="font-black text-slate-900 dark:text-white group-hover:text-blush transition-colors text-lg leading-tight mb-1">{{ activity.title }}</p>
+                          <p class="text-xs font-semibold text-slate-400">{{ activity.description }}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-8 py-6 glass bg-white/40 dark:bg-slate-800/20 border-y border-white/60 group-hover:bg-white dark:group-hover:bg-slate-700/50 transition-all">
+                      <span class="px-3 py-1.5 rounded-lg text-[9px] font-black text-slate-500 bg-slate-100 dark:bg-slate-700/50 uppercase tracking-widest border border-slate-200 dark:border-slate-600">
+                        {{ activity.type }}
+                      </span>
+                    </td>
+                    <td class="px-8 py-6 glass bg-white/40 dark:bg-slate-800/20 border-y border-white/60 group-hover:bg-white dark:group-hover:bg-slate-700/50 transition-all">
+                      <div class="flex flex-col">
+                        <span class="text-xs font-black text-slate-700 dark:text-slate-200">{{ activity.timestamp | date:'shortDate' }}</span>
+                        <span class="text-[10px] font-bold text-slate-400">{{ activity.timestamp | date:'HH:mm' }}</span>
+                      </div>
+                    </td>
+                    <td class="px-8 py-6 glass bg-white/40 dark:bg-slate-800/20 rounded-r-[2.5rem] border-y border-r border-white/60 group-hover:bg-white dark:group-hover:bg-slate-700/50 transition-all text-right">
+                      <button class="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-700/50 flex items-center justify-center text-slate-300 group-hover:text-blush transition-all transform group-hover:scale-110 group-hover:rotate-12">
+                         <svg class="w-5 h-5 font-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                         </svg>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    </div>
+
   `,
   styles: [`
     :host {
